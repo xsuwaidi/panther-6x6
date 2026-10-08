@@ -109,6 +109,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 #load .sp{width:46px;height:46px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--red);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #err{display:none;max-width:420px;text-align:center;color:var(--muted);line-height:1.7}
+body.rec *{transition:none!important;animation:none!important}
+body.rec .stat,body.rec .card,body.rec .lg,body.rec .gal figure{opacity:1!important;transform:none!important}
+body.rec #nav,body.rec #hint{display:none!important}
+body.rec #panel{bottom:auto;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(12,15,19,.9)!important}
 @media (max-width:760px){
   #panel,#panel.wide{top:auto;bottom:74px;right:10px;left:10px;width:auto;max-height:46%;padding:18px 18px 16px;transform:translateY(30px)}
   #panel.show,#panel.wide.show{transform:none}
@@ -150,6 +154,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 (function(){
 'use strict';
 const $ = s => document.querySelector(s);
+const REC=/[?&]rec/.test(location.search); if(REC) document.body.classList.add('rec');
+const simTimers=[]; let panelShownAt=-1, alarmAt=-99;
+function later(fn,s){ if(REC) simTimers.push({t:T+s,fn}); else return setTimeout(fn,s*1000); }
 const ICON = {
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
@@ -255,13 +262,13 @@ try{
   renderer = new THREE.WebGLRenderer({canvas:$('#c'), antialias:true, powerPreference:'high-performance'});
 }catch(e){ $('#err').style.display='block'; document.querySelector('#load .sp').style.display='none'; return; }
 const DPR = Math.min(window.devicePixelRatio||1, 2);
-renderer.setPixelRatio(DPR);
+renderer.setPixelRatio(/[?&]rec/.test(location.search)?0.8:DPR);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.35;
 renderer.useLegacyLights = true;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = !/[?&]rec/.test(location.search);
+renderer.shadowMap.type = /[?&]rec/.test(location.search)?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
 const SKY = new THREE.Color(0x0b1220);
@@ -551,11 +558,11 @@ function go(i){
   [...chips.children].forEach((c,k)=>{c.classList.toggle('cur',k===i);c.classList.toggle('done',k<i);});
   chips.children[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   panel.classList.remove('show');
-  clearTimeout(go._t);
-  go._t=setTimeout(()=>{panel.innerHTML=P.html;panel.classList.toggle('wide',!!P.wide);panel.scrollTop=0;panel.classList.add('show');bindPanel();},P.alarm?2200:(P.wide?900:550));
+  clearTimeout(go._t); simTimers.length=0; panelShownAt=-1; if(REC) panel.style.opacity=0;
+  go._t=later(()=>{panel.innerHTML=P.html;panel.classList.toggle('wide',!!P.wide);panel.scrollTop=0;panel.classList.add('show');panelShownAt=T;bindPanel();},(P.alarm?2200:(P.wide?900:550))/1000);
   hsEls.forEach(h=>h.classList.remove('on','hl'));hlPart=-1;
   $('#hud').classList.toggle('on',!!P.hud);
-  if(P.alarm){$('#alarm').classList.remove('go');void $('#alarm').offsetWidth;$('#alarm').classList.add('go');$('#alarmMsg').classList.add('on');setTimeout(()=>$('#alarmMsg').classList.remove('on'),2100);}
+  if(P.alarm){alarmAt=T;$('#alarm').classList.remove('go');void $('#alarm').offsetWidth;$('#alarm').classList.add('go');$('#alarmMsg').classList.add('on');later(()=>$('#alarmMsg').classList.remove('on'),2.1);}
   document.querySelectorAll('#panel video').forEach(v=>v.pause());
   try{history.replaceState(null,'','#'+i);}catch(e){}
   autoRestart();
@@ -604,8 +611,12 @@ let camShift=.2, baseZoom=1; addEventListener('resize',resize); resize();
 /* loop */
 const clock=new THREE.Clock(); const _p=new THREE.Vector3(); const _q=new THREE.Vector3();
 let firstFrame=true;
-function frame(){
-  const dt=Math.min(clock.getDelta(),.05); T+=dt; phaseT+=dt;
+function frame(fixed){
+  const dt=fixed?fixed:Math.min(clock.getDelta(),.05); T+=dt; phaseT+=dt;
+  if(REC){ for(let i=simTimers.length-1;i>=0;i--) if(T>=simTimers[i].t){const f=simTimers[i].fn;simTimers.splice(i,1);f();}
+    panel.style.opacity=panelShownAt<0?0:Math.min(1,(T-panelShownAt)/.5);
+    const a=T-alarmAt; $('#alarm').style.opacity=a<3?Math.max(0,Math.sin(a*Math.PI)):0;
+    hsEls.forEach(h=>{if(h.classList.contains('on'))h.style.opacity=1;else h.style.opacity=0;}); }
   // truck motion
   if(moveDur>0 && moveT<moveDur){ moveT=Math.min(moveDur,moveT+dt); const u=moveT/moveDur; const e=moveEase==='out'?easeOut(u):easeIO(u); const nx=fromX+(toX-fromX)*e; speed=(nx-truckX)/dt; truckX=nx; }
   else { speed*=.85; if(Math.abs(speed)<.01) speed=0; }
@@ -648,13 +659,14 @@ function frame(){
   if(P.hud){ const kmh=Math.min(115,Math.abs(speed)/peakV*115*1.04); drawGauge(kmh); }
   renderer.render(scene,camera);
   if(firstFrame===false && $('#load').style.opacity!=='0'){ $('#load').style.opacity=0; setTimeout(()=>$('#load').style.display='none',800); }
-  requestAnimationFrame(frame);
+  if(!REC) requestAnimationFrame(()=>frame());
 }
+window.__go=go; window.__step=(n,d)=>{for(let i=0;i<n;i++)frame(d||1/24);};
 const start=parseInt((location.hash||'').slice(1));
 go(isNaN(start)?0:start);
 // warm-start camera when deep-linking
 truckX=PH[cur].x; moveDur=0;
-requestAnimationFrame(frame);
+if(REC){ $('#load').style.display='none'; frame(1/24); } else requestAnimationFrame(()=>frame());
 })();
 </script>
 </body>
