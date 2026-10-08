@@ -1,3 +1,4 @@
 # Rosenbauer Panther 6×6
 
-عرض تفاعلي عربي — https://xsuwaidi.github.io/panther-6x6/
+- 3D scenario: https://xsuwaidi.github.io/panther-6x6/
+- Slides: https://xsuwaidi.github.io/panther-6x6/slides/

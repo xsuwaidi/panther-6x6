@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>روزنباور بانثر 6×6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#07090B;--panel:#161B21;--ink:#F3EFE9;--muted:#8C959E;--red:#E5262F;--teal:#2FBF8F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#07090B;--panel:#161B21;--ink:#F3EFE9;--muted:#8C959E}}
+:root[data-theme="dark"]{--bg:#07090B;--panel:#161B21;--ink:#F3EFE9;--muted:#8C959E}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
+#viewport{position:fixed;inset:0 0 64px 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#stage{position:relative;width:1920px;height:1080px;flex:none;transform-origin:center center;box-shadow:0 20px 80px rgba(0,0,0,.6)}
+.slide{position:absolute!important;inset:0;width:1920px;height:1080px;overflow:hidden;opacity:0;visibility:hidden;transition:opacity .55s ease,transform .55s ease;transform:translateX(-60px)}
+.slide.active{opacity:1;visibility:visible;transform:none}
+.slide.before{transform:translateX(60px)}
+.slide p,.slide h1,.slide h2,.slide h3{margin:0}
+.slide p{line-height:1.4}
+.slide h1{line-height:1.1;font-weight:600}.slide h2{line-height:1.15;font-weight:600}.slide h3{line-height:1.2;font-weight:600}
+.slide img{display:block}
+.xi{display:block;flex:none}
+.xe{border:0;background:transparent;pointer-events:none}
+[data-build-in]{opacity:0;transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+[data-build-in^="rise"]{transform:translateY(40px)}
+[data-build-in^="left"]{transform:translateX(-60px)}
+[data-build-in^="pop"],[data-build-in^="scale"]{transform:scale(.85)}
+.slide.active [data-build-in].shown{opacity:1;transform:none}
+.vwrap{position:absolute;cursor:pointer;background:#000}
+.vplay{position:absolute;left:50%;top:50%;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:50%;border:0;background:rgba(229,38,47,.92);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 0 rgba(229,38,47,.6);animation:ping 2s infinite}
+.vplay svg{width:64px;height:64px}
+.vwrap.playing .vplay{opacity:0;pointer-events:none;animation:none}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(229,38,47,.55)}100%{box-shadow:0 0 0 36px rgba(229,38,47,0)}}
+#bar{position:fixed;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#0D1013;border-top:1px solid rgba(255,255,255,.08)}
+#bar button{height:44px;min-width:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:var(--panel);color:var(--ink);font:600 15px 'IBM Plex Sans Arabic',Tahoma,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px}
+#bar button:hover{border-color:var(--red)}
+#bar svg{width:20px;height:20px}
+#count{font:600 15px 'IBM Plex Sans Arabic',Tahoma,sans-serif;color:var(--muted);min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+#prog{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;cursor:pointer}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--red));transition:width .4s}
+#notes{position:fixed;left:12px;right:12px;bottom:76px;max-width:900px;margin:0 auto;padding:16px 20px;background:rgba(13,16,19,.95);border:1px solid rgba(255,255,255,.14);border-radius:10px;font-size:17px;line-height:1.6;direction:rtl;text-align:right;display:none}
+#notes.on{display:block}
+#grid{position:fixed;inset:0 0 64px 0;background:rgba(7,9,11,.97);overflow:auto;display:none;padding:24px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;align-content:start}
+#grid.on{display:grid}
+.thumb{position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:2px solid rgba(255,255,255,.12);cursor:pointer;background:#0D1013}
+.thumb.cur{border-color:var(--red)}
+.thumb .inner{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.thumb .inner .slide{opacity:1;visibility:visible;transform:none;transition:none}
+.thumb .inner [data-build-in]{opacity:1;transform:none}
+.thumb b{position:absolute;right:8px;bottom:6px;font:700 14px Tahoma,sans-serif;background:rgba(0,0,0,.7);padding:2px 8px;border-radius:4px}
+.hide-sm{display:inline}
+@media (max-width:560px){.hide-sm{display:none}#bar{gap:6px;padding:0 8px}#bar button{padding:0 10px}}
+:fullscreen #viewport{inset:0}
+:fullscreen #bar{opacity:0;transition:opacity .3s}
+:fullscreen #bar:hover{opacity:1}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+<section class="slide" id="cover" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px">
+<img src="../media/panther-bg.jpg" alt="مركبة روزنباور بانثر 6×6 أثناء تشغيل القاذف العلوي ليلاً" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.95) 0%, rgba(13,16,19,0.75) 38%, rgba(13,16,19,0) 72%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div data-build-in="left 1" style="position:absolute;right:128px;top:330px;width:140px;height:8px;background:#E5262F"></div>
+<p data-build-in="rise 2" style="position:absolute;right:128px;top:370px;width:900px;font-size:30px;font-weight:600;color:#F08A24;letter-spacing:1px;text-align:right">&#8235;مركبة استجابة للحوادث الخطرة والمتطورة&#8236;</p>
+<h1 data-build-in="rise 3" style="position:absolute;right:128px;top:420px;width:1000px;font-family:'Cairo', Tahoma, sans-serif;font-size:120px;font-weight:900;line-height:1.15;text-align:right;color:#F3EFE9">&#8235;روزنباور بانثر 6×6&#8236;</h1>
+<p data-build-in="rise 4" style="position:absolute;right:128px;top:600px;width:820px;font-size:32px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;عرض فني تنفيذي | مواصفات، قدرات تشغيلية، وصور الزيارة الميدانية&#8236;</p>
+<p data-build-in="fade 5" style="position:absolute;right:128px;bottom:64px;width:900px;font-size:24px;letter-spacing:4px;color:#8C959E;text-align:right">ROSENBAUER · PANTHER 6×6 · ARFF</p>
+
+</section>
+
+<section class="slide" id="overview" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.45">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.88) 50%, rgba(13,16,19,0.7) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1100px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">01</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;نظرة شاملة وسعات الإطفاء&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;ملخص تنفيذي يجمع أهم مواصفات المركبة مع سعات مواد الإطفاء في صفحة واحدة بشكل واضح ومباشر.&#8236;</p>
+</div>
+<div data-build-in="pop 1" style="position:absolute;left:1400px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">6×6</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;نظام الحركة&#8236;</p>
+</div>
+<div data-build-in="pop 2" style="position:absolute;left:976px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #2E8F86;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">≈ 700</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;حصان — قدرة المحرك&#8236;</p>
+</div>
+<div data-build-in="pop 3" style="position:absolute;left:552px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">12,500</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;لتر ماء&#8236;</p>
+</div>
+<div data-build-in="pop 4" style="position:absolute;left:128px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #F08A24;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">1,500</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;لتر رغوة&#8236;</p>
+</div>
+<div data-build-in="rise 5" style="position:absolute;left:128px;top:790px;width:1664px;display:flex;flex-direction:row-reverse;justify-content:start;gap:20px">
+<p style="font-size:28px;font-weight:600;color:#F3EFE9;background:rgba(229,38,47,0.16);border:1px solid rgba(229,38,47,0.6);border-radius:40px;padding:12px 32px">&#8235;سرعة قصوى 115 كم/س&#8236;</p>
+<p style="font-size:28px;font-weight:600;color:#F3EFE9;background:rgba(47,191,143,0.14);border:1px solid rgba(47,191,143,0.6);border-radius:40px;padding:12px 32px">&#8235;الطاقم: سائق + 4 إطفائيين&#8236;</p>
+<p style="font-size:28px;font-weight:600;color:#F3EFE9;background:rgba(240,138,36,0.14);border:1px solid rgba(240,138,36,0.6);border-radius:40px;padding:12px 32px">&#8235;بودرة DCP: 250 كجم&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">02</p>
+</div>
+
+</section>
+
+<section class="slide" id="drive" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.3">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 55%, rgba(13,16,19,0.8) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<img data-build-in="left 1" src="../media/sim-cockpit.jpg" alt="مقصورة محاكي قيادة بانثر: عجلة القيادة وأذرع التحكم وشاشات تعرض سيناريو حريق طائرة" style="position:absolute;left:128px;top:128px;width:560px;height:792px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.14)">
+<div data-build-in="fade 2" style="position:absolute;left:152px;top:836px;width:512px;display:flex;flex-direction:row-reverse;align-items:center;gap:14px;padding:14px 22px;background:rgba(13,16,19,0.82);border-radius:40px">
+<svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,12 7,12 10,4 14,20 17,12 21,12"/></svg>
+<p style="font-size:24px;font-weight:600;color:#F3EFE9">&#8235;مقصورة محاكي القيادة — بانثر&#8236;</p>
+</div>
+<div style="position:absolute;right:128px;top:128px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">02</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;منظومة القيادة والطاقم&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;قدرة حركة عالية مع ناقل أوتوماتيك ومقصورة مهيأة لطاقم الاستجابة الأولية.&#8236;</p>
+</div>
+<div data-build-in="rise 3" style="position:absolute;right:128px;top:400px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 40px;background:rgba(22,27,33,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:44px;font-weight:700;line-height:1.2;text-align:right">&#8235;شركة فولفو | ناقل حركة أوتوماتيك&#8236;</h3>
+<p style="font-size:30px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;منظومة القيادة تعتمد على شركة فولفو مع ناقل حركة أوتوماتيك، وتدعمها شاشة تحكم مركزية لمراقبة وتشغيل معدات الإطفاء مثل قوة دفع المياه، ضغط المياه، خلط الماء بالرغوة، ونظام البودرة DCP.&#8236;</p>
+</div>
+<div data-build-in="rise 4" style="position:absolute;right:128px;top:740px;width:1000px;display:flex;flex-direction:row-reverse;align-items:center;gap:32px">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:120px;height:120px;background:#E5262F;border-radius:50%">
+<svg class="xi" style="color:#F3EFE9;width:64px;height:64px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2 5 5"/></svg>
+</div>
+<div style="display:flex;flex-direction:column;align-items:end;gap:4px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:1px">&#8235;طاقم المركبة&#8236;</p>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:44px;font-weight:800;line-height:1.2">&#8235;سائق + 4 إطفائيين — جاهزية تدخل كاملة&#8236;</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">&#8235;قيم الأداء مشروطة بتهيئة المركبة والحمولة · 03&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="pump" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.35">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 45%, rgba(13,16,19,0.78) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<iframe class="xe" sandbox="allow-scripts" style="position:absolute;left:128px;top:200px;width:860px;height:640px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;
+html,body{margin:0;background:transparent;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
+.jet{fill:none;stroke-linecap:round;stroke-dasharray:18 14;animation:flow .7s linear infinite}
+.draw{fill:none;stroke-linecap:round;stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1.6s ease-out forwards}
+.d2{animation-delay:.6s}
+@keyframes flow{to{stroke-dashoffset:-64}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.ring{transform-origin:150px 150px;animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.4);opacity:0}}
+.band{animation:band 2s ease-in-out infinite}
+@keyframes band{50%{opacity:.25}}
+.lbl{fill:#BAC2CA;font-size:26px;font-weight:bold}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;svg viewBox=&quot;0 0 860 640&quot; width=&quot;860&quot; height=&quot;640&quot;&gt;
+&lt;defs&gt;
+&lt;linearGradient id=&quot;g1&quot; x1=&quot;1&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;0&quot;&gt;&lt;stop offset=&quot;0&quot; stop-color=&quot;#ffffff&quot;/&gt;&lt;stop offset=&quot;1&quot; stop-color=&quot;#2FBF8F&quot;/&gt;&lt;/linearGradient&gt;
+&lt;linearGradient id=&quot;g2&quot; x1=&quot;1&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;0&quot;&gt;&lt;stop offset=&quot;0&quot; stop-color=&quot;#ffffff&quot;/&gt;&lt;stop offset=&quot;1&quot; stop-color=&quot;#E5262F&quot;/&gt;&lt;/linearGradient&gt;
+&lt;/defs&gt;
+&lt;line x1=&quot;40&quot; y1=&quot;560&quot; x2=&quot;820&quot; y2=&quot;560&quot; stroke=&quot;#3A444E&quot; stroke-width=&quot;3&quot;/&gt;
+&lt;rect class=&quot;band&quot; x=&quot;60&quot; y=&quot;548&quot; width=&quot;160&quot; height=&quot;24&quot; rx=&quot;4&quot; fill=&quot;#E5262F&quot; opacity=&quot;.55&quot;/&gt;
+&lt;g stroke=&quot;#8C959E&quot; stroke-width=&quot;3&quot;&gt;&lt;line x1=&quot;780&quot; y1=&quot;550&quot; x2=&quot;780&quot; y2=&quot;578&quot;/&gt;&lt;line x1=&quot;540&quot; y1=&quot;550&quot; x2=&quot;540&quot; y2=&quot;578&quot;/&gt;&lt;line x1=&quot;220&quot; y1=&quot;550&quot; x2=&quot;220&quot; y2=&quot;578&quot;/&gt;&lt;line x1=&quot;60&quot; y1=&quot;550&quot; x2=&quot;60&quot; y2=&quot;578&quot;/&gt;&lt;/g&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;780&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;0&lt;/text&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;540&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;30 m&lt;/text&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;220&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;70 m&lt;/text&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;60&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;90 m&lt;/text&gt;
+&lt;path class=&quot;draw&quot; d=&quot;M780 480 Q 650 360 540 556&quot; stroke=&quot;#2FBF8F&quot; stroke-width=&quot;10&quot; opacity=&quot;.35&quot;/&gt;
+&lt;path class=&quot;jet&quot; d=&quot;M780 480 Q 650 360 540 556&quot; stroke=&quot;url(#g1)&quot; stroke-width=&quot;6&quot;/&gt;
+&lt;path class=&quot;draw d2&quot; d=&quot;M770 400 Q 430 20 140 556&quot; stroke=&quot;#E5262F&quot; stroke-width=&quot;12&quot; opacity=&quot;.35&quot;/&gt;
+&lt;path class=&quot;jet&quot; d=&quot;M770 400 Q 430 20 140 556&quot; stroke=&quot;url(#g2)&quot; stroke-width=&quot;7&quot;/&gt;
+&lt;circle cx=&quot;780&quot; cy=&quot;480&quot; r=&quot;10&quot; fill=&quot;#2FBF8F&quot;/&gt;&lt;circle class=&quot;pulse&quot; cx=&quot;780&quot; cy=&quot;480&quot; r=&quot;10&quot; fill=&quot;none&quot; stroke=&quot;#2FBF8F&quot; stroke-width=&quot;3&quot;/&gt;
+&lt;circle cx=&quot;770&quot; cy=&quot;400&quot; r=&quot;10&quot; fill=&quot;#E5262F&quot;/&gt;&lt;circle class=&quot;pulse&quot; cx=&quot;770&quot; cy=&quot;400&quot; r=&quot;10&quot; fill=&quot;none&quot; stroke=&quot;#E5262F&quot; stroke-width=&quot;3&quot;/&gt;
+&lt;circle cx=&quot;150&quot; cy=&quot;150&quot; r=&quot;104&quot; fill=&quot;#161B21&quot; stroke=&quot;#2A323A&quot; stroke-width=&quot;10&quot;/&gt;
+&lt;circle class=&quot;ring&quot; cx=&quot;150&quot; cy=&quot;150&quot; r=&quot;104&quot; fill=&quot;none&quot; stroke=&quot;#E5262F&quot; stroke-width=&quot;10&quot; stroke-dasharray=&quot;420 240&quot; stroke-linecap=&quot;round&quot;/&gt;
+&lt;text x=&quot;150&quot; y=&quot;122&quot; text-anchor=&quot;middle&quot; fill=&quot;#F3EFE9&quot; font-size=&quot;30&quot; font-weight=&quot;bold&quot;&gt;PUMP&lt;/text&gt;
+&lt;text x=&quot;150&quot; y=&quot;198&quot; text-anchor=&quot;middle&quot; fill=&quot;#E5262F&quot; font-size=&quot;82&quot; font-weight=&quot;900&quot;&gt;9K&lt;/text&gt;
+&lt;/svg&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+<div style="position:absolute;right:128px;top:128px;width:760px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">03</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;منظومة الضخ والقاذفات&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;تدفق عالٍ ومدى رمي مناسب للتعامل مع حوادث المواد الخطرة والحوادث المتطورة.&#8236;</p>
+</div>
+<p data-build-in="fade 1" style="position:absolute;right:128px;top:440px;width:760px;font-size:30px;font-weight:700;color:#2FBF8F;text-align:right">&#8235;مدى القاذفين — هجوم علوي وأمامي&#8236;</p>
+<div data-build-in="rise 2" style="position:absolute;left:1424px;top:500px;width:368px;display:flex;flex-direction:column;align-items:end;gap:8px;padding:28px 32px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:900;line-height:1.1;color:#2FBF8F">&#8235;30 م&#8236;</p>
+<p style="font-size:26px;line-height:1.4;color:#D3D8DD;text-align:right">&#8235;القاذف الأول (السفلي): مدى يصل إلى 30 متر&#8236;</p>
+</div>
+<div data-build-in="rise 3" style="position:absolute;left:1032px;top:500px;width:368px;display:flex;flex-direction:column;align-items:end;gap:8px;padding:28px 32px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:900;line-height:1.1;color:#E5262F">&#8235;70-90 م&#8236;</p>
+<p style="font-size:26px;line-height:1.4;color:#D3D8DD;text-align:right">&#8235;القاذف الثاني (العلوي): مدى يقارب 70-90 متر حسب الضغط والإعداد&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">&#8235;معدل التدفق يتأثر بإعداد المضخة والضغط وخطوط التصريف · 04&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="parts" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.3">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 55%, rgba(13,16,19,0.8) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<img data-build-in="left 1" src="../media/photo-spray.jpg" alt="مركبة بانثر 6×6 تشغّل القاذف العلوي على المدرج أثناء الزيارة الميدانية" style="position:absolute;left:128px;top:128px;width:560px;height:792px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.14)">
+<div style="position:absolute;right:128px;top:128px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">04</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;الأجزاء الرئيسية والأبعاد&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;توزيع أبرز أنظمة المركبة مع الأبعاد الرئيسية لتسهيل القراءة الفنية.&#8236;</p>
+</div>
+<div data-build-in="pop 2" style="position:absolute;left:1475px;top:400px;width:317px;display:flex;flex-direction:column;align-items:end;gap:6px;padding:28px 28px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:64px;font-weight:900;line-height:1.1">&#8235;11.5 م&#8236;</p>
+<p style="font-size:28px;color:#BAC2CA">&#8235;الطول&#8236;</p>
+</div>
+<div data-build-in="pop 3" style="position:absolute;left:1134px;top:400px;width:317px;display:flex;flex-direction:column;align-items:end;gap:6px;padding:28px 28px;background:rgba(22,27,33,0.9);border:2px solid #F08A24;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:64px;font-weight:900;line-height:1.1">&#8235;3 م&#8236;</p>
+<p style="font-size:28px;color:#BAC2CA">&#8235;العرض&#8236;</p>
+</div>
+<div data-build-in="pop 4" style="position:absolute;left:793px;top:400px;width:317px;display:flex;flex-direction:column;align-items:end;gap:6px;padding:28px 28px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:64px;font-weight:900;line-height:1.1">&#8235;4 م&#8236;</p>
+<p style="font-size:28px;color:#BAC2CA">&#8235;الارتفاع&#8236;</p>
+</div>
+<p data-build-in="fade 5" style="position:absolute;right:128px;top:600px;width:1000px;font-size:26px;font-weight:700;color:#2FBF8F;text-align:right">&#8235;الأنظمة الرئيسية للمركبة&#8236;</p>
+<div data-build-in="rise 6" style="position:absolute;left:1300px;top:648px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">1</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;المراقب العلوي&#8236;</p>
+</div>
+<div data-build-in="rise 7" style="position:absolute;left:792px;top:648px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">2</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;مقصورة الطاقم&#8236;</p>
+</div>
+<div data-build-in="rise 8" style="position:absolute;left:1300px;top:740px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">3</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;الخزانات&#8236;</p>
+</div>
+<div data-build-in="rise 9" style="position:absolute;left:792px;top:740px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">4</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;حجرة المضخة&#8236;</p>
+</div>
+<div data-build-in="rise 10" style="position:absolute;left:1300px;top:832px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">5</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;المحرك والحركة&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">&#8235;الأبعاد الرئيسية: الطول 11.5 م | العرض 3 م | الارتفاع 4 م · 05&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="spec" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px">
+<img src="../media/panther-bg.jpg" alt="مركبة بانثر 6×6 ليلاً" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.85">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 45%, rgba(13,16,19,0.15) 75%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:110px;width:900px;display:flex;flex-direction:column;align-items:end;gap:6px">
+<p style="font-size:26px;font-weight:700;letter-spacing:6px;color:#E5262F">ROSENBAUER</p>
+<h1 style="font-family:'Cairo', Tahoma, sans-serif;font-size:104px;font-weight:900;line-height:1.05;letter-spacing:2px">PANTHER</h1>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:44px;font-weight:700;line-height:1.2;text-align:right">&#8235;مركبة الإطفاء والإنقاذ في المطارات&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;أداء عالٍ ومدى كبير لمكافحة حرائق الطائرات في ساحات المطارات، مع منظومة متكاملة للضخ والقاذفات والتقنيات الحديثة.&#8236;</p>
+</div>
+<div data-build-in="left 1" style="position:absolute;right:128px;top:440px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l8-8"/><path d="M14.5 3.5a5 5 0 0 0 6 6l-4.5 4.5-6-6z"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;الأبعاد&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;الطول: 11.5 متر | العرض: 3 متر | الارتفاع: 4 متر&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 2" style="position:absolute;right:128px;top:536px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="3.2 2.6" stroke-width="3"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;المحرك&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;شركة Volvo — جير أوتوماتيكي (Automatic)&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 3" style="position:absolute;right:128px;top:632px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;القاذفات&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;القاذف الأول: مدى يصل إلى 30 متر&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;القاذف الثاني: مدى يصل إلى 70-90 متر&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 4" style="position:absolute;right:128px;top:766px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2 5 5"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;المقصورة&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;مقصورة متقدمة ومريحة للطاقم مجهزة بأحدث أنظمة التحكم والمراقبة&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 5" style="position:absolute;right:128px;top:862px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;الاستخدام&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;مكافحة حرائق الطائرات والمواد الخطرة في ساحات المطارات&#8236;</p>
+</div>
+</div>
+<div data-build-in="rise 6" style="position:absolute;left:128px;top:690px;width:640px;display:flex;flex-direction:column;align-items:center;gap:14px;padding:32px 36px;background:rgba(13,16,19,0.82);border:2px solid #E5262F;border-radius:14px">
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:center">&#8235;الاستخدامات التشغيلية&#8236;</h3>
+<div style="width:120px;height:4px;background:#E5262F"></div>
+<p style="font-size:26px;line-height:1.5;color:#D3D8DD;text-align:center">&#8235;مخصصة للاستجابة للحوادث المتطورة وحوادث المواد الخطرة، ودعم عمليات التدخل السريع والسيطرة على المخاطر المتصاعدة.&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="usage" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.4">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.88) 50%, rgba(13,16,19,0.75) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1200px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">05</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;مجالات <span style="color:#E5262F">الاستخدام</span>&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;تُستخدم المركبة للتعامل مع الحوادث المتطورة وحوادث المواد الخطرة.&#8236;</p>
+</div>
+<img data-build-in="left 1" src="../media/photo-briefing.jpg" alt="جلسة الشرح الفني لفريق الزيارة في قاعة الاجتماعات" style="position:absolute;left:128px;top:380px;width:540px;height:400px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.14)">
+<div data-build-in="rise 2" style="position:absolute;left:1440px;top:380px;width:352px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 32px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;background:rgba(229,38,47,0.16);border:2px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:right">&#8235;زمن وصول أقصر&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;تسارع قوي ودفع 6×6 لدعم الحركة السريعة نحو موقع البلاغ.&#8236;</p>
+</div>
+<div data-build-in="rise 3" style="position:absolute;left:1064px;top:380px;width:352px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 32px;background:rgba(22,27,33,0.9);border:2px solid #F08A24;border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;background:rgba(240,138,36,0.16);border:2px solid #F08A24;border-radius:50%"><svg class="xi" style="color:#F08A24;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:right">&#8235;هجوم أولي كثيف&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;معدل ضخ مرتفع وسعات كبيرة للماء والرغوة لبدء المكافحة فور الوصول.&#8236;</p>
+</div>
+<div data-build-in="rise 4" style="position:absolute;left:688px;top:380px;width:352px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 32px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;background:rgba(47,191,143,0.16);border:2px solid #2FBF8F;border-radius:50%"><svg class="xi" style="color:#2FBF8F;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="3.2 2.6" stroke-width="3"/></svg></div>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:right">&#8235;مرونة عوامل الإطفاء&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;ماء ورغوة، مع خيار مسحوق جاف بحسب التهيئة التشغيلية.&#8236;</p>
+</div>
+<div data-build-in="rise 5" style="position:absolute;left:128px;top:820px;width:1664px;display:flex;flex-direction:row-reverse;align-items:center;gap:20px;padding:18px 32px;background:rgba(22,27,33,0.9);border:1px solid rgba(229,38,47,0.5);border-radius:6px">
+<svg class="xi" style="color:#E5262F;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+<p style="font-size:28px;color:#F3EFE9;text-align:right">&#8235;الملاءمة النهائية تُحسم عبر تحليل المخاطر، زمن الاستجابة المطلوب، البنية التحتية، التدريب والصيانة.&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">OPERATIONAL FIT | EVIDENCE-BASED REVIEW</p>
+<p style="font-size:24px;color:#8C959E">07</p>
+</div>
+
+</section>
+
+<section class="slide" id="visit" data-transition="fade" style="background:#14181C;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.3">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(180deg, rgba(20,24,28,0.8) 0%, rgba(20,24,28,0.95) 60%, rgba(20,24,28,0.98) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1500px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">FIELD VISIT DOCUMENTATION</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;<span style="color:#E5262F">توثيق الزيارة</span> والتدريب العملي&#8236;</h2>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;يتضمن هذا القسم صورًا من التدريب على المحاكاة، جلسة الشرح الفني، والمعاينة الميدانية المباشرة للمركبة.&#8236;</p>
+</div>
+<img data-build-in="rise 1" src="../media/photo-sim.jpg" alt="تدريب على محاكي القيادة ADMS" style="position:absolute;left:1259px;top:390px;width:533px;height:520px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16)">
+<div data-build-in="fade 2" style="position:absolute;left:1259px;top:830px;width:533px;display:flex;flex-direction:row-reverse;align-items:center;gap:16px;padding:18px 24px;background:linear-gradient(270deg, rgba(229,38,47,0.95) 0%, rgba(229,38,47,0.75) 100%);border-radius:0 0 6px 6px">
+<svg class="xi" style="color:#F3EFE9;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,12 7,12 10,4 14,20 17,12 21,12"/></svg>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:32px;font-weight:800">&#8235;تدريب المحاكاة&#8236;</p>
+</div>
+<img data-build-in="rise 3" src="../media/photo-briefing.jpg" alt="جلسة الشرح الفني لفريق الزيارة" style="position:absolute;left:694px;top:390px;width:533px;height:520px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16)">
+<div data-build-in="fade 4" style="position:absolute;left:694px;top:830px;width:533px;display:flex;flex-direction:row-reverse;align-items:center;gap:16px;padding:18px 24px;background:linear-gradient(270deg, rgba(229,38,47,0.95) 0%, rgba(229,38,47,0.75) 100%);border-radius:0 0 6px 6px">
+<svg class="xi" style="color:#F3EFE9;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2 5 5"/></svg>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:32px;font-weight:800">&#8235;جلسة الشرح الفني&#8236;</p>
+</div>
+<img data-build-in="rise 5" src="../media/photo-visit.jpg" alt="معاينة ميدانية أمام مركبة بانثر 6×6" style="position:absolute;left:128px;top:390px;width:533px;height:520px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16)">
+<div data-build-in="fade 6" style="position:absolute;left:128px;top:830px;width:533px;display:flex;flex-direction:row-reverse;align-items:center;gap:16px;padding:18px 24px;background:linear-gradient(270deg, rgba(229,38,47,0.95) 0%, rgba(229,38,47,0.75) 100%);border-radius:0 0 6px 6px">
+<svg class="xi" style="color:#F3EFE9;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:32px;font-weight:800">&#8235;معاينة ميدانية&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | FIELD VISIT</p>
+<p style="font-size:24px;color:#8C959E">&#8235;توثيق الزيارة — التدريب — الشرح — المعاينة الميدانية · 08&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="video-op" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.4">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 55%, rgba(13,16,19,0.8) 100%)"></div>
+<div style="position:absolute;left:0;top:0;width:24px;height:1080px;background:#E5262F"></div>
+<div class="vwrap" data-build-in="scale 1" style="position:absolute;left:160px;top:128px;width:463px;height:824px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16);overflow:hidden"><video src="../media/video-spray.mp4" poster="../media/still-v1.jpg" playsinline preload="metadata" aria-label="فيديو تشغيلي: مركبة بانثر 6×6 تشغّل القاذفين على المدرج" style="width:100%;height:100%;object-fit:cover;display:block"></video><button class="vplay" aria-label="تشغيل الفيديو"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg></button></div>
+<div style="position:absolute;right:128px;top:200px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:20px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">FIELD VIDEO</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;الفيديو التشغيلي&#8236;</h2>
+<div style="width:140px;height:6px;background:#2FBF8F"></div>
+<p style="font-size:30px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;تم وضع الفيديو في شريحة مستقلة لضمان التشغيل بشكل واضح أثناء العرض.&#8236;</p>
+<p style="font-size:30px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;استخدم هذه الشريحة عند الوصول إلى جزء الزيارة الميدانية والتشغيل العملي.&#8236;</p>
+</div>
+<div data-build-in="rise 2" style="position:absolute;right:128px;top:720px;width:1000px;display:flex;flex-direction:row-reverse;align-items:center;gap:20px;padding:22px 32px;background:rgba(229,38,47,0.14);border:2px solid #E5262F;border-radius:6px">
+<svg class="xi" style="color:#E5262F;width:48px;height:48px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="7,4 20,12 7,20" fill="currentColor" stroke="none"/></svg>
+<p style="font-size:28px;font-weight:600;text-align:right">&#8235;ملاحظة: اضغط على الفيديو مباشرة أثناء العرض لتشغيله.&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:end">
+<p style="font-size:24px;letter-spacing:3px;color:#8C959E">OPERATIONAL VIDEO | PANTHER 6×6 · 09</p>
+</div>
+
+</section>
+
+<section class="slide" id="video-training" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="../media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.35">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(180deg, rgba(13,16,19,0.85) 0%, rgba(13,16,19,0.95) 45%, rgba(13,16,19,0.97) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1500px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">FIELD VIDEO</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;التدريب العملي: <span style="color:#E5262F">من المحاكاة إلى القيادة</span>&#8236;</h2>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;اضغط على أي فيديو أثناء العرض لتشغيله.&#8236;</p>
+</div>
+<div class="vwrap" data-build-in="rise 1" style="position:absolute;left:1488px;top:360px;width:304px;height:545px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16);overflow:hidden"><video src="../media/video-sim.mp4" poster="../media/still-v2.jpg" playsinline preload="metadata" aria-label="فيديو التدريب على محاكي القيادة" style="width:100%;height:100%;object-fit:cover;display:block"></video><button class="vplay" aria-label="تشغيل الفيديو"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg></button></div>
+<p data-build-in="fade 2" style="position:absolute;left:1508px;top:836px;width:264px;font-family:'Cairo', Tahoma, sans-serif;font-size:26px;font-weight:800;text-align:center;background:rgba(229,38,47,0.92);border-radius:30px;padding:8px 16px">&#8235;تدريب المحاكاة&#8236;</p>
+<div class="vwrap" data-build-in="rise 3" style="position:absolute;left:480px;top:360px;width:968px;height:545px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16);overflow:hidden"><video src="../media/video-drive.mp4" poster="../media/still-v3.jpg" playsinline preload="metadata" aria-label="فيديو القيادة الميدانية من داخل مقصورة المركبة" style="width:100%;height:100%;object-fit:cover;display:block"></video><button class="vplay" aria-label="تشغيل الفيديو"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg></button></div>
+<p data-build-in="fade 4" style="position:absolute;left:1088px;top:836px;width:340px;font-family:'Cairo', Tahoma, sans-serif;font-size:26px;font-weight:800;text-align:center;background:rgba(229,38,47,0.92);border-radius:30px;padding:8px 16px">&#8235;القيادة الميدانية للمركبة&#8236;</p>
+<div style="position:absolute;left:128px;top:360px;width:320px;display:flex;flex-direction:column;align-items:end;gap:24px">
+<div style="display:flex;flex-direction:column;align-items:end;gap:4px;padding:24px;background:rgba(22,27,33,0.9);border-top:4px solid #2FBF8F">
+<p style="font-size:24px;color:#2FBF8F;font-weight:700">&#8235;١ — المحاكاة&#8236;</p>
+<p style="font-size:24px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;التدريب على محاكي القيادة ADMS قبل التشغيل الفعلي&#8236;</p>
+</div>
+<div style="display:flex;flex-direction:column;align-items:end;gap:4px;padding:24px;background:rgba(22,27,33,0.9);border-top:4px solid #E5262F">
+<p style="font-size:24px;color:#E5262F;font-weight:700">&#8235;٢ — القيادة&#8236;</p>
+<p style="font-size:24px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;قيادة المركبة ميدانياً على المدرج من داخل المقصورة&#8236;</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:end">
+<p style="font-size:24px;letter-spacing:3px;color:#8C959E">OPERATIONAL VIDEO | PANTHER 6×6 · 10</p>
+</div>
+
+</section>
+
+<section class="slide" id="closing" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px">
+<img src="../media/panther-bg.jpg" alt="مركبة روزنباور بانثر 6×6" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.95) 0%, rgba(13,16,19,0.75) 38%, rgba(13,16,19,0) 72%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div data-build-in="left 1" style="position:absolute;right:128px;top:380px;width:140px;height:8px;background:#E5262F"></div>
+<h1 data-build-in="rise 2" style="position:absolute;right:128px;top:420px;width:900px;font-family:'Cairo', Tahoma, sans-serif;font-size:120px;font-weight:900;line-height:1.15;text-align:right">&#8235;شكرًا لكم&#8236;</h1>
+<p data-build-in="rise 3" style="position:absolute;right:128px;top:590px;width:800px;font-size:32px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;روزنباور بانثر 6×6 — مركبة استجابة للحوادث الخطرة والمتطورة&#8236;</p>
+<p data-build-in="fade 4" style="position:absolute;right:128px;bottom:64px;width:900px;font-size:24px;letter-spacing:4px;color:#8C959E;text-align:right">PANTHER 6×6 | TECHNICAL BRIEF</p>
+
+</section>
+
+</div></div>
+<div id="notes"></div>
+<div id="grid"></div>
+<div id="bar">
+<button id="prev" aria-label="السابق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button>
+<span id="count">1 / 11</span>
+<button id="next" aria-label="التالي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+<div id="prog"><i></i></div>
+<button id="gridBtn" aria-label="كل الشرائح"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span class="hide-sm">الشرائح</span></button>
+<button id="notesBtn" aria-label="ملاحظات المتحدث"><span>ملاحظات</span></button>
+<button id="fsBtn" aria-label="ملء الشاشة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</div>
+<script>
+const NOTES = ["مرحباً بالجميع. نستعرض اليوم مركبة روزنباور بانثر 6×6: المواصفات الفنية، القدرات التشغيلية، ثم توثيق الزيارة الميدانية والتدريب العملي مع الفيديوهات.", "هذه أهم الأرقام في صفحة واحدة: نظام حركة 6×6، قدرة محرك تقارب 700 حصان، خزان ماء 12,500 لتر، ورغوة 1,500 لتر. إضافة إلى سرعة قصوى 115 كم/س، طاقم من سائق و4 إطفائيين، و250 كجم من بودرة DCP.", "منظومة القيادة من فولفو مع ناقل حركة أوتوماتيك، وشاشة تحكم مركزية لتشغيل معدات الإطفاء: قوة دفع المياه، الضغط، خلط الرغوة، ونظام البودرة. الطاقم سائق وأربعة إطفائيين. الصورة من داخل مقصورة محاكي القيادة أثناء سيناريو حريق طائرة.", "منظومة ضخ بتدفق عالٍ. القاذف الأول يصل مداه إلى 30 متراً، والقاذف الثاني يقارب 70 إلى 90 متراً حسب الضغط والإعداد، ما يتيح هجوماً علوياً وأمامياً. التدفق الفعلي يتأثر بإعداد المضخة والضغط وخطوط التصريف.", "الأبعاد الرئيسية: الطول 11.5 متر، العرض 3 أمتار، الارتفاع 4 أمتار. الأنظمة الرئيسية: المراقب العلوي، مقصورة الطاقم، الخزانات، حجرة المضخة، والمحرك ومنظومة الحركة.", "بطاقة المواصفات المختصرة: أبعاد 11.5 × 3 × 4 أمتار، محرك فولفو مع جير أوتوماتيكي، قاذفان بمدى 30 متراً و70 إلى 90 متراً، ومقصورة متقدمة للطاقم. الاستخدام الأساسي: مكافحة حرائق الطائرات والمواد الخطرة، مع دعم التدخل السريع في الحوادث المتطورة.", "ثلاثة أسباب تشغيلية: زمن وصول أقصر بفضل التسارع ونظام 6×6، هجوم أولي كثيف بمعدل ضخ مرتفع وسعات كبيرة، ومرونة في عوامل الإطفاء بين الماء والرغوة والمسحوق الجاف. القرار النهائي يُبنى على تحليل المخاطر وزمن الاستجابة والبنية التحتية والتدريب والصيانة.", "ننتقل إلى توثيق الزيارة: التدريب العملي على محاكي القيادة، جلسة الشرح الفني مع فريق الشركة المصنعة، ثم المعاينة الميدانية المباشرة للمركبة.", "اضغط على الفيديو لتشغيله: المركبة تشغّل القاذف العلوي والقاذف الأمامي معاً على المدرج خلال الزيارة الميدانية.", "فيديوهان من التدريب العملي: الأول على محاكي القيادة، والثاني من داخل مقصورة المركبة أثناء القيادة الميدانية على المدرج. اضغط على كل فيديو لتشغيله.", "شكراً لحسن الاستماع. المجال مفتوح للأسئلة والنقاش."];
+const stage = document.getElementById('stage'), vp = document.getElementById('viewport');
+const slides = [...stage.querySelectorAll('.slide')];
+const N = slides.length;
+let cur = 0, timers = [];
+
+function fit(){
+  const w = vp.clientWidth, h = vp.clientHeight;
+  const s = Math.min(w/1920, h/1080);
+  stage.style.transform = 'scale(' + s + ')';
+}
+window.addEventListener('resize', fit);
+
+function stopVideos(sl){
+  sl.querySelectorAll('video').forEach(v => { v.pause(); v.closest('.vwrap').classList.remove('playing'); });
+}
+function builds(sl){
+  timers.forEach(clearTimeout); timers = [];
+  const els = [...sl.querySelectorAll('[data-build-in]')];
+  els.forEach(e => e.classList.remove('shown'));
+  els.sort((a,b) => (parseInt(a.dataset.buildIn.split(' ')[1])||0) - (parseInt(b.dataset.buildIn.split(' ')[1])||0));
+  els.forEach((e,i) => timers.push(setTimeout(() => e.classList.add('shown'), 350 + i*260)));
+}
+function go(i, instant){
+  i = Math.max(0, Math.min(N-1, i));
+  const prev = cur;
+  slides.forEach((s,k) => {
+    s.classList.toggle('active', k === i);
+    s.classList.toggle('before', k > i);
+  });
+  if (prev !== i) stopVideos(slides[prev]);
+  cur = i;
+  builds(slides[i]);
+  document.getElementById('count').textContent = (i+1) + ' / ' + N;
+  document.querySelector('#prog i').style.width = ((i+1)/N*100) + '%';
+  document.getElementById('notes').textContent = NOTES[i] || '';
+  try { history.replaceState(null, '', '#' + (i+1)); } catch(e) {}
+  document.querySelectorAll('.thumb').forEach((t,k) => t.classList.toggle('cur', k === i));
+}
+const next = () => go(cur+1), prev = () => go(cur-1);
+document.getElementById('next').onclick = next;
+document.getElementById('prev').onclick = prev;
+document.getElementById('prog').onclick = e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  go(Math.floor((e.clientX - r.left) / r.width * N));
+};
+document.getElementById('notesBtn').onclick = () => document.getElementById('notes').classList.toggle('on');
+document.getElementById('fsBtn').onclick = () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+  setTimeout(fit, 300);
+};
+document.addEventListener('fullscreenchange', () => setTimeout(fit, 50));
+
+// overview grid
+const grid = document.getElementById('grid');
+function buildGrid(){
+  if (grid.childElementCount) return;
+  slides.forEach((s,k) => {
+    const t = document.createElement('div'); t.className = 'thumb';
+    const inner = document.createElement('div'); inner.className = 'inner';
+    const c = s.cloneNode(true); c.classList.add('active');
+    c.querySelectorAll('video').forEach(v => { const img = document.createElement('img'); img.src = v.poster; img.style.cssText = 'width:100%;height:100%;object-fit:cover'; v.replaceWith(img); });
+    c.querySelectorAll('iframe,.vplay').forEach(f => f.remove());
+    inner.appendChild(c); t.appendChild(inner);
+    const b = document.createElement('b'); b.textContent = k+1; t.appendChild(b);
+    t.onclick = () => { grid.classList.remove('on'); go(k); };
+    grid.appendChild(t);
+  });
+}
+function sizeThumbs(){ grid.querySelectorAll('.thumb').forEach(t => { t.querySelector('.inner').style.transform = 'scale(' + (t.clientWidth/1920) + ')'; }); }
+document.getElementById('gridBtn').onclick = () => {
+  buildGrid(); grid.classList.toggle('on'); sizeThumbs();
+  document.querySelectorAll('.thumb').forEach((t,k) => t.classList.toggle('cur', k === cur));
+};
+window.addEventListener('resize', sizeThumbs);
+
+// videos
+stage.querySelectorAll('.vwrap').forEach(w => {
+  const v = w.querySelector('video');
+  w.addEventListener('click', e => {
+    e.stopPropagation();
+    if (v.paused) { v.play().then(() => w.classList.add('playing')).catch(() => { v.muted = true; v.play(); w.classList.add('playing'); }); }
+    else { v.pause(); w.classList.remove('playing'); }
+  });
+  v.addEventListener('ended', () => w.classList.remove('playing'));
+});
+
+// keyboard + swipe
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','PageDown',' ','Enter'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(N-1);
+  else if (e.key === 'f' || e.key === 'F') document.getElementById('fsBtn').click();
+  else if (e.key === 'n' || e.key === 'N') document.getElementById('notesBtn').click();
+  else if (e.key === 'g' || e.key === 'G' || e.key === 'Escape') { if (e.key !== 'Escape' || grid.classList.contains('on')) document.getElementById('gridBtn').click(); }
+});
+let sx = null, sy = null;
+vp.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
+vp.addEventListener('touchend', e => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); }
+  sx = null;
+}, {passive:true});
+
+const start = parseInt((location.hash || '').slice(1)) || 1;
+fit(); go(start - 1);
+</script>
+</body>
+</html>
