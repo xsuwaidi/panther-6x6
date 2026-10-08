@@ -1,673 +1,571 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>بانثر 6×6 — السيناريو التشغيلي</title>
-<meta name="description" content="عرض تفاعلي ثلاثي الأبعاد لمركبة روزنباور بانثر 6×6 على شكل سيناريو تشغيلي">
+<title>روزنباور بانثر 6×6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
-:root{--bg:#06080A;--panel:rgba(12,15,19,.82);--line:rgba(255,255,255,.12);--ink:#F3EFE9;--muted:#AEB6BE;--red:#E5262F;--orange:#F08A24;--teal:#2FBF8F}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#06080A}}
-:root[data-theme="dark"]{--bg:#06080A}
+:root{--bg:#07090B;--panel:#161B21;--ink:#F3EFE9;--muted:#8C959E;--red:#E5262F;--teal:#2FBF8F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#07090B;--panel:#161B21;--ink:#F3EFE9;--muted:#8C959E}}
+:root[data-theme="dark"]{--bg:#07090B;--panel:#161B21;--ink:#F3EFE9;--muted:#8C959E}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
-#c:active{cursor:grabbing}
-.h{font-family:'Cairo',Tahoma,sans-serif}
-/* top bar */
-#top{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:max(14px,env(safe-area-inset-top)) 18px 0;pointer-events:none;z-index:5}
-#brand{font:700 13px/1.3 'IBM Plex Sans Arabic',sans-serif;letter-spacing:3px;color:var(--muted);direction:ltr}
-#brand b{color:var(--red)}
-#phaseTag{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
-#phaseNum{font:700 13px 'IBM Plex Sans Arabic';color:var(--teal);letter-spacing:1px}
-#phaseName{font:800 20px 'Cairo';text-shadow:0 2px 14px rgba(0,0,0,.6)}
-/* panel */
-#panel{position:fixed;top:72px;right:18px;width:min(460px,40vw);max-height:calc(100% - 170px);overflow:auto;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:14px;padding:24px 24px 22px;z-index:6;opacity:0;transform:translateX(30px);transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1);pointer-events:none;-webkit-user-select:text;user-select:text}
-#panel.show{opacity:1;transform:none;pointer-events:auto}
-#panel.wide{width:min(980px,calc(100vw - 36px));right:50%;transform:translateX(50%) translateY(20px)}
-#panel.wide.show{transform:translateX(50%)}
-#panel::-webkit-scrollbar{width:6px}#panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:3px}
-.eyebrow{font:700 13px 'IBM Plex Sans Arabic';color:var(--orange);letter-spacing:.5px;margin:0 0 6px}
-.ttl{font:800 30px/1.25 'Cairo',sans-serif;margin:0 0 8px}
-.bar{width:70px;height:4px;background:var(--red);border-radius:2px;margin:10px 0 14px}
-.sub{font-size:16px;line-height:1.7;color:#D4D9DE;margin:0 0 14px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 12px}
-.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-top:3px solid var(--c,var(--teal));border-radius:8px;padding:12px 14px;opacity:0;transform:translateY(12px);animation:rise .6s forwards}
-.stat b{display:block;font:900 28px/1.15 'Cairo';direction:ltr;text-align:right}
-.stat span{font-size:14px;color:var(--muted)}
-@keyframes rise{to{opacity:1;transform:none}}
-.pills{display:flex;flex-wrap:wrap;gap:8px}
-.pill{font-size:14px;font-weight:600;padding:7px 14px;border-radius:30px;background:rgba(229,38,47,.14);border:1px solid rgba(229,38,47,.5)}
-.pill.t{background:rgba(47,191,143,.12);border-color:rgba(47,191,143,.5)}.pill.o{background:rgba(240,138,36,.12);border-color:rgba(240,138,36,.5)}
-.card{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 10px;opacity:0;animation:rise .6s forwards}
-.card h4{font:800 18px 'Cairo';margin:0 0 4px}
-.card p{margin:0;font-size:14.5px;line-height:1.65;color:#D4D9DE}
-.row{display:flex;gap:12px;align-items:flex-start}
-.ic{flex:none;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--c,var(--red));color:var(--c,var(--red))}
-.ic svg{width:22px;height:22px}
-.legend{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.lg{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;opacity:0;animation:rise .5s forwards}
-.lg:hover{border-color:var(--red)}
-.num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--red);color:#fff;font:700 13px/24px 'IBM Plex Sans Arabic';text-align:center}
-.note{font-size:13px;color:var(--muted);margin:10px 0 0;line-height:1.6}
-.btn{display:inline-flex;align-items:center;gap:8px;font:700 17px 'Cairo';color:#fff;background:var(--red);border:0;border-radius:40px;padding:12px 26px;cursor:pointer;box-shadow:0 0 0 0 rgba(229,38,47,.6);animation:ping 2s infinite}
-.btn.ghost{background:transparent;border:1px solid var(--line);animation:none;font-size:15px;padding:10px 18px}
-@keyframes ping{0%{box-shadow:0 0 0 0 rgba(229,38,47,.55)}100%{box-shadow:0 0 0 18px rgba(229,38,47,0)}}
-.thumb{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;display:block;margin:4px 0 10px}
-.big{font:900 46px/1 'Cairo';direction:ltr;text-align:right}
-/* gallery */
-.gal{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.gal figure{margin:0;position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000;opacity:0;animation:rise .6s forwards}
-.gal img,.gal video{width:100%;height:100%;aspect-ratio:3/4;object-fit:cover;display:block;cursor:zoom-in}
-.gal figcaption{position:absolute;bottom:0;left:0;right:0;padding:18px 10px 8px;font:700 13px 'Cairo';background:linear-gradient(transparent,rgba(0,0,0,.85))}
-.gal .v{grid-column:span 2}
-.gal .v video{aspect-ratio:16/9;cursor:pointer}
-.gal .vt video{aspect-ratio:9/16}
-/* hotspots */
-#hot{position:fixed;inset:0;pointer-events:none;z-index:4}
-.hs{position:absolute;display:flex;align-items:center;gap:6px;transform:translate(-50%,-50%);opacity:0;transition:opacity .5s}
-.hs.on{opacity:1}
-.hs .dot{width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font:700 13px/26px 'IBM Plex Sans Arabic';text-align:center;box-shadow:0 0 0 0 rgba(229,38,47,.7);animation:ping 1.6s infinite}
-.hs .lab{font:700 13px 'Cairo';background:rgba(10,12,15,.85);border:1px solid var(--line);padding:4px 10px;border-radius:20px;white-space:nowrap}
-.hs.hl .lab{border-color:var(--red);background:rgba(229,38,47,.85)}
-/* HUD */
-#hud{position:fixed;left:22px;bottom:96px;z-index:5;display:flex;align-items:flex-end;gap:14px;opacity:0;transition:opacity .5s;pointer-events:none;direction:ltr}
-#hud.on{opacity:1}
-#gauge{width:150px;height:150px}
-#hudTxt{font:700 13px 'IBM Plex Sans Arabic';color:var(--muted);direction:rtl;line-height:1.6}
-#hudTxt b{color:var(--ink);font-size:15px}
-/* alarm */
-#alarm{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(229,38,47,0) 40%,rgba(229,38,47,.55) 100%)}
-#alarm.go{animation:alarm 1s 3}
-@keyframes alarm{0%,100%{opacity:0}40%{opacity:1}}
-#alarmMsg{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:8;font:900 34px 'Cairo';background:rgba(229,38,47,.92);padding:14px 34px;border-radius:12px;opacity:0;transition:all .4s;pointer-events:none;text-align:center;white-space:nowrap}
-#alarmMsg small{display:block;font:600 15px 'IBM Plex Sans Arabic';opacity:.9}
-#alarmMsg.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
-/* nav */
-#nav{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;align-items:center;gap:8px;padding:10px 12px max(10px,env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.75) 35%)}
-#nav button{flex:none;height:44px;min-width:44px;border-radius:10px;border:1px solid var(--line);background:rgba(20,24,29,.9);color:var(--ink);font:700 14px 'IBM Plex Sans Arabic';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 12px}
-#nav button:hover{border-color:var(--red)}
-#nav button.on{background:var(--red);border-color:var(--red)}
-#nav svg{width:20px;height:20px}
-#chips{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
-#chips::-webkit-scrollbar{display:none}
-.chip{flex:1 0 auto;min-width:96px;height:44px;border-radius:10px;border:1px solid var(--line);background:rgba(20,24,29,.85);color:var(--muted);font:700 12.5px/1.25 'IBM Plex Sans Arabic';cursor:pointer;padding:4px 10px;text-align:center;position:relative;overflow:hidden}
-.chip i{display:block;font-style:normal;font-size:11px;color:var(--teal)}
-.chip.done{color:var(--ink)}
-.chip.cur{color:#fff;border-color:var(--red);background:rgba(229,38,47,.25)}
-.chip.cur::after{content:"";position:absolute;bottom:0;right:0;height:3px;width:var(--p,0%);background:var(--red)}
-#hint{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:5;font-size:13px;color:var(--muted);background:rgba(0,0,0,.5);padding:6px 14px;border-radius:20px;transition:opacity 1s;pointer-events:none;white-space:nowrap}
-/* lightbox */
-#lb{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
-#lb.on{display:flex}
-#lb img{max-width:100%;max-height:100%;border-radius:8px}
-/* loader */
-#load{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .8s}
-#load .h{font-size:28px}
-#load .sp{width:46px;height:46px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--red);animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#err{display:none;max-width:420px;text-align:center;color:var(--muted);line-height:1.7}
-body.rec *{transition:none!important;animation:none!important}
-body.rec .stat,body.rec .card,body.rec .lg,body.rec .gal figure{opacity:1!important;transform:none!important}
-body.rec #nav,body.rec #hint{display:none!important}
-body.rec #panel{bottom:auto;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(12,15,19,.9)!important}
-@media (max-width:760px){
-  #panel,#panel.wide{top:auto;bottom:74px;right:10px;left:10px;width:auto;max-height:46%;padding:18px 18px 16px;transform:translateY(30px)}
-  #panel.show,#panel.wide.show{transform:none}
-  .ttl{font-size:23px}.sub{font-size:14.5px}.stat b{font-size:22px}.big{font-size:34px}
-  #phaseName{font-size:16px}#brand{font-size:10px;letter-spacing:2px}
-  #hud{bottom:auto;top:64px;left:10px}#gauge{width:96px;height:96px}#hudTxt{display:none}
-  .gal{grid-template-columns:repeat(2,1fr)}
-  .chip{min-width:84px;font-size:11.5px}
-  #nav .lbl{display:none}
-  .hs .lab{font-size:11px;padding:3px 8px}.hs .dot{width:22px;height:22px;line-height:22px;font-size:12px}
-  #hint{bottom:70px;font-size:12px}
-  #alarmMsg{font-size:24px;padding:12px 22px}
-}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
+#viewport{position:fixed;inset:0 0 64px 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#stage{position:relative;width:1920px;height:1080px;flex:none;transform-origin:center center;box-shadow:0 20px 80px rgba(0,0,0,.6)}
+.slide{position:absolute!important;inset:0;width:1920px;height:1080px;overflow:hidden;opacity:0;visibility:hidden;transition:opacity .55s ease,transform .55s ease;transform:translateX(-60px)}
+.slide.active{opacity:1;visibility:visible;transform:none}
+.slide.before{transform:translateX(60px)}
+.slide p,.slide h1,.slide h2,.slide h3{margin:0}
+.slide p{line-height:1.4}
+.slide h1{line-height:1.1;font-weight:600}.slide h2{line-height:1.15;font-weight:600}.slide h3{line-height:1.2;font-weight:600}
+.slide img{display:block}
+.xi{display:block;flex:none}
+.xe{border:0;background:transparent;pointer-events:none}
+[data-build-in]{opacity:0;transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+[data-build-in^="rise"]{transform:translateY(40px)}
+[data-build-in^="left"]{transform:translateX(-60px)}
+[data-build-in^="pop"],[data-build-in^="scale"]{transform:scale(.85)}
+.slide.active [data-build-in].shown{opacity:1;transform:none}
+.vwrap{position:absolute;cursor:pointer;background:#000}
+.vplay{position:absolute;left:50%;top:50%;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:50%;border:0;background:rgba(229,38,47,.92);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 0 rgba(229,38,47,.6);animation:ping 2s infinite}
+.vplay svg{width:64px;height:64px}
+.vwrap.playing .vplay{opacity:0;pointer-events:none;animation:none}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(229,38,47,.55)}100%{box-shadow:0 0 0 36px rgba(229,38,47,0)}}
+#bar{position:fixed;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#0D1013;border-top:1px solid rgba(255,255,255,.08)}
+#bar button{height:44px;min-width:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:var(--panel);color:var(--ink);font:600 15px 'IBM Plex Sans Arabic',Tahoma,sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px}
+#bar button:hover{border-color:var(--red)}
+#bar svg{width:20px;height:20px}
+#count{font:600 15px 'IBM Plex Sans Arabic',Tahoma,sans-serif;color:var(--muted);min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+#prog{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;cursor:pointer}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--red));transition:width .4s}
+#notes{position:fixed;left:12px;right:12px;bottom:76px;max-width:900px;margin:0 auto;padding:16px 20px;background:rgba(13,16,19,.95);border:1px solid rgba(255,255,255,.14);border-radius:10px;font-size:17px;line-height:1.6;direction:rtl;text-align:right;display:none}
+#notes.on{display:block}
+#grid{position:fixed;inset:0 0 64px 0;background:rgba(7,9,11,.97);overflow:auto;display:none;padding:24px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;align-content:start}
+#grid.on{display:grid}
+.thumb{position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:2px solid rgba(255,255,255,.12);cursor:pointer;background:#0D1013}
+.thumb.cur{border-color:var(--red)}
+.thumb .inner{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.thumb .inner .slide{opacity:1;visibility:visible;transform:none;transition:none}
+.thumb .inner [data-build-in]{opacity:1;transform:none}
+.thumb b{position:absolute;right:8px;bottom:6px;font:700 14px Tahoma,sans-serif;background:rgba(0,0,0,.7);padding:2px 8px;border-radius:4px}
+.hide-sm{display:inline}
+@media (max-width:560px){.hide-sm{display:none}#bar{gap:6px;padding:0 8px}#bar button{padding:0 10px}}
+:fullscreen #viewport{inset:0}
+:fullscreen #bar{opacity:0;transition:opacity .3s}
+:fullscreen #bar:hover{opacity:1}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="top">
-  <div id="phaseTag"><span id="phaseNum">المرحلة 0</span><span id="phaseName" class="h">الجاهزية</span></div>
-  <div id="brand"><b>ROSENBAUER</b> · PANTHER 6×6 · ARFF</div>
+<div id="viewport"><div id="stage">
+<section class="slide" id="cover" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px">
+<img src="media/panther-bg.jpg" alt="مركبة روزنباور بانثر 6×6 أثناء تشغيل القاذف العلوي ليلاً" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.95) 0%, rgba(13,16,19,0.75) 38%, rgba(13,16,19,0) 72%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div data-build-in="left 1" style="position:absolute;right:128px;top:330px;width:140px;height:8px;background:#E5262F"></div>
+<p data-build-in="rise 2" style="position:absolute;right:128px;top:370px;width:900px;font-size:30px;font-weight:600;color:#F08A24;letter-spacing:1px;text-align:right">&#8235;مركبة استجابة للحوادث الخطرة والمتطورة&#8236;</p>
+<h1 data-build-in="rise 3" style="position:absolute;right:128px;top:420px;width:1000px;font-family:'Cairo', Tahoma, sans-serif;font-size:120px;font-weight:900;line-height:1.15;text-align:right;color:#F3EFE9">&#8235;روزنباور بانثر 6×6&#8236;</h1>
+<p data-build-in="rise 4" style="position:absolute;right:128px;top:600px;width:820px;font-size:32px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;عرض فني تنفيذي | مواصفات، قدرات تشغيلية، وصور الزيارة الميدانية&#8236;</p>
+<p data-build-in="fade 5" style="position:absolute;right:128px;bottom:64px;width:900px;font-size:24px;letter-spacing:4px;color:#8C959E;text-align:right">ROSENBAUER · PANTHER 6×6 · ARFF</p>
+
+</section>
+
+<section class="slide" id="overview" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.45">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.88) 50%, rgba(13,16,19,0.7) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1100px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">01</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;نظرة شاملة وسعات الإطفاء&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;ملخص تنفيذي يجمع أهم مواصفات المركبة مع سعات مواد الإطفاء في صفحة واحدة بشكل واضح ومباشر.&#8236;</p>
 </div>
-<div id="hot"></div>
-<div id="hud"><canvas id="gauge" width="300" height="300"></canvas><div id="hudTxt">السرعة الحالية<br><b>نظام دفع 6×6</b><br>ناقل حركة أوتوماتيك</div></div>
-<aside id="panel"></aside>
-<div id="alarm"></div>
-<div id="alarmMsg">بلاغ طارئ<small>حريق طائرة على المدرج — حادث مواد خطرة</small></div>
-<div id="hint">اسحب لتدوير المشهد · استخدم الأسهم أو الأزرار للتنقل بين المراحل</div>
-<nav id="nav">
-  <button id="prev" aria-label="المرحلة السابقة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-  <div id="chips"></div>
-  <button id="next" aria-label="المرحلة التالية"><span class="lbl">التالي</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button>
-  <button id="auto" aria-label="تشغيل تلقائي"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span class="lbl">تلقائي</span></button>
-</nav>
-<div id="lb"><img alt=""></div>
-<div id="load"><div class="sp"></div><div class="h">بانثر 6×6</div><div style="color:var(--muted);font-size:14px">جارٍ تجهيز المشهد ثلاثي الأبعاد…</div><div id="err">تعذّر تشغيل العرض ثلاثي الأبعاد على هذا الجهاز. يمكنك مشاهدة <a href="slides/" style="color:#F08A24">نسخة الشرائح</a> بدلاً منه.</div></div>
+<div data-build-in="pop 1" style="position:absolute;left:1400px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">6×6</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;نظام الحركة&#8236;</p>
+</div>
+<div data-build-in="pop 2" style="position:absolute;left:976px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #2E8F86;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">≈ 700</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;حصان — قدرة المحرك&#8236;</p>
+</div>
+<div data-build-in="pop 3" style="position:absolute;left:552px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">12,500</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;لتر ماء&#8236;</p>
+</div>
+<div data-build-in="pop 4" style="position:absolute;left:128px;top:470px;width:392px;display:flex;flex-direction:column;align-items:end;gap:12px;padding:48px 40px;background:rgba(22,27,33,0.9);border:2px solid #F08A24;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:80px;font-weight:800;line-height:1.1;color:#F3EFE9">1,500</p>
+<p style="font-size:30px;color:#BAC2CA">&#8235;لتر رغوة&#8236;</p>
+</div>
+<div data-build-in="rise 5" style="position:absolute;left:128px;top:790px;width:1664px;display:flex;flex-direction:row-reverse;justify-content:start;gap:20px">
+<p style="font-size:28px;font-weight:600;color:#F3EFE9;background:rgba(229,38,47,0.16);border:1px solid rgba(229,38,47,0.6);border-radius:40px;padding:12px 32px">&#8235;سرعة قصوى 115 كم/س&#8236;</p>
+<p style="font-size:28px;font-weight:600;color:#F3EFE9;background:rgba(47,191,143,0.14);border:1px solid rgba(47,191,143,0.6);border-radius:40px;padding:12px 32px">&#8235;الطاقم: سائق + 4 إطفائيين&#8236;</p>
+<p style="font-size:28px;font-weight:600;color:#F3EFE9;background:rgba(240,138,36,0.14);border:1px solid rgba(240,138,36,0.6);border-radius:40px;padding:12px 32px">&#8235;بودرة DCP: 250 كجم&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">02</p>
+</div>
 
-<script src="vendor/three.min.js"></script>
+</section>
+
+<section class="slide" id="drive" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.3">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 55%, rgba(13,16,19,0.8) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<img data-build-in="left 1" src="media/sim-cockpit.jpg" alt="مقصورة محاكي قيادة بانثر: عجلة القيادة وأذرع التحكم وشاشات تعرض سيناريو حريق طائرة" style="position:absolute;left:128px;top:128px;width:560px;height:792px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.14)">
+<div data-build-in="fade 2" style="position:absolute;left:152px;top:836px;width:512px;display:flex;flex-direction:row-reverse;align-items:center;gap:14px;padding:14px 22px;background:rgba(13,16,19,0.82);border-radius:40px">
+<svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,12 7,12 10,4 14,20 17,12 21,12"/></svg>
+<p style="font-size:24px;font-weight:600;color:#F3EFE9">&#8235;مقصورة محاكي القيادة — بانثر&#8236;</p>
+</div>
+<div style="position:absolute;right:128px;top:128px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">02</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;منظومة القيادة والطاقم&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;قدرة حركة عالية مع ناقل أوتوماتيك ومقصورة مهيأة لطاقم الاستجابة الأولية.&#8236;</p>
+</div>
+<div data-build-in="rise 3" style="position:absolute;right:128px;top:400px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 40px;background:rgba(22,27,33,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:44px;font-weight:700;line-height:1.2;text-align:right">&#8235;شركة فولفو | ناقل حركة أوتوماتيك&#8236;</h3>
+<p style="font-size:30px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;منظومة القيادة تعتمد على شركة فولفو مع ناقل حركة أوتوماتيك، وتدعمها شاشة تحكم مركزية لمراقبة وتشغيل معدات الإطفاء مثل قوة دفع المياه، ضغط المياه، خلط الماء بالرغوة، ونظام البودرة DCP.&#8236;</p>
+</div>
+<div data-build-in="rise 4" style="position:absolute;right:128px;top:740px;width:1000px;display:flex;flex-direction:row-reverse;align-items:center;gap:32px">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:120px;height:120px;background:#E5262F;border-radius:50%">
+<svg class="xi" style="color:#F3EFE9;width:64px;height:64px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2 5 5"/></svg>
+</div>
+<div style="display:flex;flex-direction:column;align-items:end;gap:4px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:1px">&#8235;طاقم المركبة&#8236;</p>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:44px;font-weight:800;line-height:1.2">&#8235;سائق + 4 إطفائيين — جاهزية تدخل كاملة&#8236;</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">&#8235;قيم الأداء مشروطة بتهيئة المركبة والحمولة · 03&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="pump" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.35">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 45%, rgba(13,16,19,0.78) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<iframe class="xe" sandbox="allow-scripts" style="position:absolute;left:128px;top:200px;width:860px;height:640px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;
+html,body{margin:0;background:transparent;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
+.jet{fill:none;stroke-linecap:round;stroke-dasharray:18 14;animation:flow .7s linear infinite}
+.draw{fill:none;stroke-linecap:round;stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1.6s ease-out forwards}
+.d2{animation-delay:.6s}
+@keyframes flow{to{stroke-dashoffset:-64}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.ring{transform-origin:150px 150px;animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.4);opacity:0}}
+.band{animation:band 2s ease-in-out infinite}
+@keyframes band{50%{opacity:.25}}
+.lbl{fill:#BAC2CA;font-size:26px;font-weight:bold}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;svg viewBox=&quot;0 0 860 640&quot; width=&quot;860&quot; height=&quot;640&quot;&gt;
+&lt;defs&gt;
+&lt;linearGradient id=&quot;g1&quot; x1=&quot;1&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;0&quot;&gt;&lt;stop offset=&quot;0&quot; stop-color=&quot;#ffffff&quot;/&gt;&lt;stop offset=&quot;1&quot; stop-color=&quot;#2FBF8F&quot;/&gt;&lt;/linearGradient&gt;
+&lt;linearGradient id=&quot;g2&quot; x1=&quot;1&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;0&quot;&gt;&lt;stop offset=&quot;0&quot; stop-color=&quot;#ffffff&quot;/&gt;&lt;stop offset=&quot;1&quot; stop-color=&quot;#E5262F&quot;/&gt;&lt;/linearGradient&gt;
+&lt;/defs&gt;
+&lt;line x1=&quot;40&quot; y1=&quot;560&quot; x2=&quot;820&quot; y2=&quot;560&quot; stroke=&quot;#3A444E&quot; stroke-width=&quot;3&quot;/&gt;
+&lt;rect class=&quot;band&quot; x=&quot;60&quot; y=&quot;548&quot; width=&quot;160&quot; height=&quot;24&quot; rx=&quot;4&quot; fill=&quot;#E5262F&quot; opacity=&quot;.55&quot;/&gt;
+&lt;g stroke=&quot;#8C959E&quot; stroke-width=&quot;3&quot;&gt;&lt;line x1=&quot;780&quot; y1=&quot;550&quot; x2=&quot;780&quot; y2=&quot;578&quot;/&gt;&lt;line x1=&quot;540&quot; y1=&quot;550&quot; x2=&quot;540&quot; y2=&quot;578&quot;/&gt;&lt;line x1=&quot;220&quot; y1=&quot;550&quot; x2=&quot;220&quot; y2=&quot;578&quot;/&gt;&lt;line x1=&quot;60&quot; y1=&quot;550&quot; x2=&quot;60&quot; y2=&quot;578&quot;/&gt;&lt;/g&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;780&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;0&lt;/text&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;540&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;30 m&lt;/text&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;220&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;70 m&lt;/text&gt;
+&lt;text class=&quot;lbl&quot; x=&quot;60&quot; y=&quot;612&quot; text-anchor=&quot;middle&quot;&gt;90 m&lt;/text&gt;
+&lt;path class=&quot;draw&quot; d=&quot;M780 480 Q 650 360 540 556&quot; stroke=&quot;#2FBF8F&quot; stroke-width=&quot;10&quot; opacity=&quot;.35&quot;/&gt;
+&lt;path class=&quot;jet&quot; d=&quot;M780 480 Q 650 360 540 556&quot; stroke=&quot;url(#g1)&quot; stroke-width=&quot;6&quot;/&gt;
+&lt;path class=&quot;draw d2&quot; d=&quot;M770 400 Q 430 20 140 556&quot; stroke=&quot;#E5262F&quot; stroke-width=&quot;12&quot; opacity=&quot;.35&quot;/&gt;
+&lt;path class=&quot;jet&quot; d=&quot;M770 400 Q 430 20 140 556&quot; stroke=&quot;url(#g2)&quot; stroke-width=&quot;7&quot;/&gt;
+&lt;circle cx=&quot;780&quot; cy=&quot;480&quot; r=&quot;10&quot; fill=&quot;#2FBF8F&quot;/&gt;&lt;circle class=&quot;pulse&quot; cx=&quot;780&quot; cy=&quot;480&quot; r=&quot;10&quot; fill=&quot;none&quot; stroke=&quot;#2FBF8F&quot; stroke-width=&quot;3&quot;/&gt;
+&lt;circle cx=&quot;770&quot; cy=&quot;400&quot; r=&quot;10&quot; fill=&quot;#E5262F&quot;/&gt;&lt;circle class=&quot;pulse&quot; cx=&quot;770&quot; cy=&quot;400&quot; r=&quot;10&quot; fill=&quot;none&quot; stroke=&quot;#E5262F&quot; stroke-width=&quot;3&quot;/&gt;
+&lt;circle cx=&quot;150&quot; cy=&quot;150&quot; r=&quot;104&quot; fill=&quot;#161B21&quot; stroke=&quot;#2A323A&quot; stroke-width=&quot;10&quot;/&gt;
+&lt;circle class=&quot;ring&quot; cx=&quot;150&quot; cy=&quot;150&quot; r=&quot;104&quot; fill=&quot;none&quot; stroke=&quot;#E5262F&quot; stroke-width=&quot;10&quot; stroke-dasharray=&quot;420 240&quot; stroke-linecap=&quot;round&quot;/&gt;
+&lt;text x=&quot;150&quot; y=&quot;122&quot; text-anchor=&quot;middle&quot; fill=&quot;#F3EFE9&quot; font-size=&quot;30&quot; font-weight=&quot;bold&quot;&gt;PUMP&lt;/text&gt;
+&lt;text x=&quot;150&quot; y=&quot;198&quot; text-anchor=&quot;middle&quot; fill=&quot;#E5262F&quot; font-size=&quot;82&quot; font-weight=&quot;900&quot;&gt;9K&lt;/text&gt;
+&lt;/svg&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
+<div style="position:absolute;right:128px;top:128px;width:760px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">03</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;منظومة الضخ والقاذفات&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;تدفق عالٍ ومدى رمي مناسب للتعامل مع حوادث المواد الخطرة والحوادث المتطورة.&#8236;</p>
+</div>
+<p data-build-in="fade 1" style="position:absolute;right:128px;top:440px;width:760px;font-size:30px;font-weight:700;color:#2FBF8F;text-align:right">&#8235;مدى القاذفين — هجوم علوي وأمامي&#8236;</p>
+<div data-build-in="rise 2" style="position:absolute;left:1424px;top:500px;width:368px;display:flex;flex-direction:column;align-items:end;gap:8px;padding:28px 32px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:900;line-height:1.1;color:#2FBF8F">&#8235;30 م&#8236;</p>
+<p style="font-size:26px;line-height:1.4;color:#D3D8DD;text-align:right">&#8235;القاذف الأول (السفلي): مدى يصل إلى 30 متر&#8236;</p>
+</div>
+<div data-build-in="rise 3" style="position:absolute;left:1032px;top:500px;width:368px;display:flex;flex-direction:column;align-items:end;gap:8px;padding:28px 32px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:900;line-height:1.1;color:#E5262F">&#8235;70-90 م&#8236;</p>
+<p style="font-size:26px;line-height:1.4;color:#D3D8DD;text-align:right">&#8235;القاذف الثاني (العلوي): مدى يقارب 70-90 متر حسب الضغط والإعداد&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">&#8235;معدل التدفق يتأثر بإعداد المضخة والضغط وخطوط التصريف · 04&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="parts" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.3">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 55%, rgba(13,16,19,0.8) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<img data-build-in="left 1" src="media/photo-spray.jpg" alt="مركبة بانثر 6×6 تشغّل القاذف العلوي على المدرج أثناء الزيارة الميدانية" style="position:absolute;left:128px;top:128px;width:560px;height:792px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.14)">
+<div style="position:absolute;right:128px;top:128px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">04</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;الأجزاء الرئيسية والأبعاد&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;توزيع أبرز أنظمة المركبة مع الأبعاد الرئيسية لتسهيل القراءة الفنية.&#8236;</p>
+</div>
+<div data-build-in="pop 2" style="position:absolute;left:1475px;top:400px;width:317px;display:flex;flex-direction:column;align-items:end;gap:6px;padding:28px 28px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:64px;font-weight:900;line-height:1.1">&#8235;11.5 م&#8236;</p>
+<p style="font-size:28px;color:#BAC2CA">&#8235;الطول&#8236;</p>
+</div>
+<div data-build-in="pop 3" style="position:absolute;left:1134px;top:400px;width:317px;display:flex;flex-direction:column;align-items:end;gap:6px;padding:28px 28px;background:rgba(22,27,33,0.9);border:2px solid #F08A24;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:64px;font-weight:900;line-height:1.1">&#8235;3 م&#8236;</p>
+<p style="font-size:28px;color:#BAC2CA">&#8235;العرض&#8236;</p>
+</div>
+<div data-build-in="pop 4" style="position:absolute;left:793px;top:400px;width:317px;display:flex;flex-direction:column;align-items:end;gap:6px;padding:28px 28px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:64px;font-weight:900;line-height:1.1">&#8235;4 م&#8236;</p>
+<p style="font-size:28px;color:#BAC2CA">&#8235;الارتفاع&#8236;</p>
+</div>
+<p data-build-in="fade 5" style="position:absolute;right:128px;top:600px;width:1000px;font-size:26px;font-weight:700;color:#2FBF8F;text-align:right">&#8235;الأنظمة الرئيسية للمركبة&#8236;</p>
+<div data-build-in="rise 6" style="position:absolute;left:1300px;top:648px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">1</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;المراقب العلوي&#8236;</p>
+</div>
+<div data-build-in="rise 7" style="position:absolute;left:792px;top:648px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">2</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;مقصورة الطاقم&#8236;</p>
+</div>
+<div data-build-in="rise 8" style="position:absolute;left:1300px;top:740px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">3</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;الخزانات&#8236;</p>
+</div>
+<div data-build-in="rise 9" style="position:absolute;left:792px;top:740px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">4</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;حجرة المضخة&#8236;</p>
+</div>
+<div data-build-in="rise 10" style="position:absolute;left:1300px;top:832px;width:492px;display:flex;flex-direction:row-reverse;align-items:center;gap:18px;padding:14px 20px;background:rgba(22,27,33,0.9);border:1px solid rgba(255,255,255,0.12);border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:#E5262F;border-radius:50%"><p style="font-size:24px;font-weight:700">5</p></div>
+<p style="font-size:30px;font-weight:600">&#8235;المحرك والحركة&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | TECHNICAL BRIEF</p>
+<p style="font-size:24px;color:#8C959E">&#8235;الأبعاد الرئيسية: الطول 11.5 م | العرض 3 م | الارتفاع 4 م · 05&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="spec" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px">
+<img src="media/panther-bg.jpg" alt="مركبة بانثر 6×6 ليلاً" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.85">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 45%, rgba(13,16,19,0.15) 75%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:110px;width:900px;display:flex;flex-direction:column;align-items:end;gap:6px">
+<p style="font-size:26px;font-weight:700;letter-spacing:6px;color:#E5262F">ROSENBAUER</p>
+<h1 style="font-family:'Cairo', Tahoma, sans-serif;font-size:104px;font-weight:900;line-height:1.05;letter-spacing:2px">PANTHER</h1>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:44px;font-weight:700;line-height:1.2;text-align:right">&#8235;مركبة الإطفاء والإنقاذ في المطارات&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;أداء عالٍ ومدى كبير لمكافحة حرائق الطائرات في ساحات المطارات، مع منظومة متكاملة للضخ والقاذفات والتقنيات الحديثة.&#8236;</p>
+</div>
+<div data-build-in="left 1" style="position:absolute;right:128px;top:440px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l8-8"/><path d="M14.5 3.5a5 5 0 0 0 6 6l-4.5 4.5-6-6z"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;الأبعاد&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;الطول: 11.5 متر | العرض: 3 متر | الارتفاع: 4 متر&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 2" style="position:absolute;right:128px;top:536px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="3.2 2.6" stroke-width="3"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;المحرك&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;شركة Volvo — جير أوتوماتيكي (Automatic)&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 3" style="position:absolute;right:128px;top:632px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;القاذفات&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;القاذف الأول: مدى يصل إلى 30 متر&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;القاذف الثاني: مدى يصل إلى 70-90 متر&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 4" style="position:absolute;right:128px;top:766px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2 5 5"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;المقصورة&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;مقصورة متقدمة ومريحة للطاقم مجهزة بأحدث أنظمة التحكم والمراقبة&#8236;</p>
+</div>
+</div>
+<div data-build-in="left 5" style="position:absolute;right:128px;top:862px;width:900px;display:flex;flex-direction:row-reverse;align-items:start;gap:24px">
+<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border:3px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:end;gap:2px">
+<p style="font-size:30px;font-weight:700">&#8235;الاستخدام&#8236;</p>
+<p style="font-size:26px;color:#D3D8DD;text-align:right">&#8235;مكافحة حرائق الطائرات والمواد الخطرة في ساحات المطارات&#8236;</p>
+</div>
+</div>
+<div data-build-in="rise 6" style="position:absolute;left:128px;top:690px;width:640px;display:flex;flex-direction:column;align-items:center;gap:14px;padding:32px 36px;background:rgba(13,16,19,0.82);border:2px solid #E5262F;border-radius:14px">
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:center">&#8235;الاستخدامات التشغيلية&#8236;</h3>
+<div style="width:120px;height:4px;background:#E5262F"></div>
+<p style="font-size:26px;line-height:1.5;color:#D3D8DD;text-align:center">&#8235;مخصصة للاستجابة للحوادث المتطورة وحوادث المواد الخطرة، ودعم عمليات التدخل السريع والسيطرة على المخاطر المتصاعدة.&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="usage" data-transition="push" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.4">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.88) 50%, rgba(13,16,19,0.75) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1200px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">05</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;مجالات <span style="color:#E5262F">الاستخدام</span>&#8236;</h2>
+<div style="width:140px;height:6px;background:#E5262F"></div>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;تُستخدم المركبة للتعامل مع الحوادث المتطورة وحوادث المواد الخطرة.&#8236;</p>
+</div>
+<img data-build-in="left 1" src="media/photo-briefing.jpg" alt="جلسة الشرح الفني لفريق الزيارة في قاعة الاجتماعات" style="position:absolute;left:128px;top:380px;width:540px;height:400px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.14)">
+<div data-build-in="rise 2" style="position:absolute;left:1440px;top:380px;width:352px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 32px;background:rgba(22,27,33,0.9);border:2px solid #E5262F;border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;background:rgba(229,38,47,0.16);border:2px solid #E5262F;border-radius:50%"><svg class="xi" style="color:#E5262F;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:right">&#8235;زمن وصول أقصر&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;تسارع قوي ودفع 6×6 لدعم الحركة السريعة نحو موقع البلاغ.&#8236;</p>
+</div>
+<div data-build-in="rise 3" style="position:absolute;left:1064px;top:380px;width:352px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 32px;background:rgba(22,27,33,0.9);border:2px solid #F08A24;border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;background:rgba(240,138,36,0.16);border:2px solid #F08A24;border-radius:50%"><svg class="xi" style="color:#F08A24;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:right">&#8235;هجوم أولي كثيف&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;معدل ضخ مرتفع وسعات كبيرة للماء والرغوة لبدء المكافحة فور الوصول.&#8236;</p>
+</div>
+<div data-build-in="rise 4" style="position:absolute;left:688px;top:380px;width:352px;display:flex;flex-direction:column;align-items:end;gap:16px;padding:36px 32px;background:rgba(22,27,33,0.9);border:2px solid #2FBF8F;border-radius:6px">
+<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;background:rgba(47,191,143,0.16);border:2px solid #2FBF8F;border-radius:50%"><svg class="xi" style="color:#2FBF8F;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="3.2 2.6" stroke-width="3"/></svg></div>
+<h3 style="font-family:'Cairo', Tahoma, sans-serif;font-size:36px;font-weight:800;line-height:1.2;text-align:right">&#8235;مرونة عوامل الإطفاء&#8236;</h3>
+<p style="font-size:26px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;ماء ورغوة، مع خيار مسحوق جاف بحسب التهيئة التشغيلية.&#8236;</p>
+</div>
+<div data-build-in="rise 5" style="position:absolute;left:128px;top:820px;width:1664px;display:flex;flex-direction:row-reverse;align-items:center;gap:20px;padding:18px 32px;background:rgba(22,27,33,0.9);border:1px solid rgba(229,38,47,0.5);border-radius:6px">
+<svg class="xi" style="color:#E5262F;width:44px;height:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+<p style="font-size:28px;color:#F3EFE9;text-align:right">&#8235;الملاءمة النهائية تُحسم عبر تحليل المخاطر، زمن الاستجابة المطلوب، البنية التحتية، التدريب والصيانة.&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">OPERATIONAL FIT | EVIDENCE-BASED REVIEW</p>
+<p style="font-size:24px;color:#8C959E">07</p>
+</div>
+
+</section>
+
+<section class="slide" id="visit" data-transition="fade" style="background:#14181C;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.3">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(180deg, rgba(20,24,28,0.8) 0%, rgba(20,24,28,0.95) 60%, rgba(20,24,28,0.98) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1500px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">FIELD VISIT DOCUMENTATION</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;<span style="color:#E5262F">توثيق الزيارة</span> والتدريب العملي&#8236;</h2>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;يتضمن هذا القسم صورًا من التدريب على المحاكاة، جلسة الشرح الفني، والمعاينة الميدانية المباشرة للمركبة.&#8236;</p>
+</div>
+<img data-build-in="rise 1" src="media/photo-sim.jpg" alt="تدريب على محاكي القيادة ADMS" style="position:absolute;left:1259px;top:390px;width:533px;height:520px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16)">
+<div data-build-in="fade 2" style="position:absolute;left:1259px;top:830px;width:533px;display:flex;flex-direction:row-reverse;align-items:center;gap:16px;padding:18px 24px;background:linear-gradient(270deg, rgba(229,38,47,0.95) 0%, rgba(229,38,47,0.75) 100%);border-radius:0 0 6px 6px">
+<svg class="xi" style="color:#F3EFE9;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,12 7,12 10,4 14,20 17,12 21,12"/></svg>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:32px;font-weight:800">&#8235;تدريب المحاكاة&#8236;</p>
+</div>
+<img data-build-in="rise 3" src="media/photo-briefing.jpg" alt="جلسة الشرح الفني لفريق الزيارة" style="position:absolute;left:694px;top:390px;width:533px;height:520px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16)">
+<div data-build-in="fade 4" style="position:absolute;left:694px;top:830px;width:533px;display:flex;flex-direction:row-reverse;align-items:center;gap:16px;padding:18px 24px;background:linear-gradient(270deg, rgba(229,38,47,0.95) 0%, rgba(229,38,47,0.75) 100%);border-radius:0 0 6px 6px">
+<svg class="xi" style="color:#F3EFE9;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2 5 5"/></svg>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:32px;font-weight:800">&#8235;جلسة الشرح الفني&#8236;</p>
+</div>
+<img data-build-in="rise 5" src="media/photo-visit.jpg" alt="معاينة ميدانية أمام مركبة بانثر 6×6" style="position:absolute;left:128px;top:390px;width:533px;height:520px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16)">
+<div data-build-in="fade 6" style="position:absolute;left:128px;top:830px;width:533px;display:flex;flex-direction:row-reverse;align-items:center;gap:16px;padding:18px 24px;background:linear-gradient(270deg, rgba(229,38,47,0.95) 0%, rgba(229,38,47,0.75) 100%);border-radius:0 0 6px 6px">
+<svg class="xi" style="color:#F3EFE9;width:40px;height:40px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg>
+<p style="font-family:'Cairo', Tahoma, sans-serif;font-size:32px;font-weight:800">&#8235;معاينة ميدانية&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;letter-spacing:3px;color:#2FBF8F;text-align:left">PANTHER 6×6 | FIELD VISIT</p>
+<p style="font-size:24px;color:#8C959E">&#8235;توثيق الزيارة — التدريب — الشرح — المعاينة الميدانية · 08&#8236;</p>
+</div>
+
+</section>
+
+<section class="slide" id="video-op" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.4">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.97) 0%, rgba(13,16,19,0.9) 55%, rgba(13,16,19,0.8) 100%)"></div>
+<div style="position:absolute;left:0;top:0;width:24px;height:1080px;background:#E5262F"></div>
+<div class="vwrap" data-build-in="scale 1" style="position:absolute;left:160px;top:128px;width:463px;height:824px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16);overflow:hidden"><video src="media/video-spray.mp4" poster="media/still-v1.jpg" playsinline preload="metadata" aria-label="فيديو تشغيلي: مركبة بانثر 6×6 تشغّل القاذفين على المدرج" style="width:100%;height:100%;object-fit:cover;display:block"></video><button class="vplay" aria-label="تشغيل الفيديو"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg></button></div>
+<div style="position:absolute;right:128px;top:200px;width:1000px;display:flex;flex-direction:column;align-items:end;gap:20px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">FIELD VIDEO</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;الفيديو التشغيلي&#8236;</h2>
+<div style="width:140px;height:6px;background:#2FBF8F"></div>
+<p style="font-size:30px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;تم وضع الفيديو في شريحة مستقلة لضمان التشغيل بشكل واضح أثناء العرض.&#8236;</p>
+<p style="font-size:30px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;استخدم هذه الشريحة عند الوصول إلى جزء الزيارة الميدانية والتشغيل العملي.&#8236;</p>
+</div>
+<div data-build-in="rise 2" style="position:absolute;right:128px;top:720px;width:1000px;display:flex;flex-direction:row-reverse;align-items:center;gap:20px;padding:22px 32px;background:rgba(229,38,47,0.14);border:2px solid #E5262F;border-radius:6px">
+<svg class="xi" style="color:#E5262F;width:48px;height:48px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="7,4 20,12 7,20" fill="currentColor" stroke="none"/></svg>
+<p style="font-size:28px;font-weight:600;text-align:right">&#8235;ملاحظة: اضغط على الفيديو مباشرة أثناء العرض لتشغيله.&#8236;</p>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:end">
+<p style="font-size:24px;letter-spacing:3px;color:#8C959E">OPERATIONAL VIDEO | PANTHER 6×6 · 09</p>
+</div>
+
+</section>
+
+<section class="slide" id="video-training" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px 128px 160px">
+<img src="media/panther-bg.jpg" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0.35">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(180deg, rgba(13,16,19,0.85) 0%, rgba(13,16,19,0.95) 45%, rgba(13,16,19,0.97) 100%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div style="position:absolute;right:128px;top:128px;width:1500px;display:flex;flex-direction:column;align-items:end;gap:14px">
+<p style="font-size:24px;font-weight:700;color:#2FBF8F;letter-spacing:4px">FIELD VIDEO</p>
+<h2 style="font-family:'Cairo', Tahoma, sans-serif;font-size:72px;font-weight:800;line-height:1.15;text-align:right">&#8235;التدريب العملي: <span style="color:#E5262F">من المحاكاة إلى القيادة</span>&#8236;</h2>
+<p style="font-size:30px;line-height:1.45;color:#BAC2CA;text-align:right">&#8235;اضغط على أي فيديو أثناء العرض لتشغيله.&#8236;</p>
+</div>
+<div class="vwrap" data-build-in="rise 1" style="position:absolute;left:1488px;top:360px;width:304px;height:545px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16);overflow:hidden"><video src="media/video-sim.mp4" poster="media/still-v2.jpg" playsinline preload="metadata" aria-label="فيديو التدريب على محاكي القيادة" style="width:100%;height:100%;object-fit:cover;display:block"></video><button class="vplay" aria-label="تشغيل الفيديو"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg></button></div>
+<p data-build-in="fade 2" style="position:absolute;left:1508px;top:836px;width:264px;font-family:'Cairo', Tahoma, sans-serif;font-size:26px;font-weight:800;text-align:center;background:rgba(229,38,47,0.92);border-radius:30px;padding:8px 16px">&#8235;تدريب المحاكاة&#8236;</p>
+<div class="vwrap" data-build-in="rise 3" style="position:absolute;left:480px;top:360px;width:968px;height:545px;object-fit:cover;border-radius:6px;border:2px solid rgba(255,255,255,0.16);overflow:hidden"><video src="media/video-drive.mp4" poster="media/still-v3.jpg" playsinline preload="metadata" aria-label="فيديو القيادة الميدانية من داخل مقصورة المركبة" style="width:100%;height:100%;object-fit:cover;display:block"></video><button class="vplay" aria-label="تشغيل الفيديو"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></svg></button></div>
+<p data-build-in="fade 4" style="position:absolute;left:1088px;top:836px;width:340px;font-family:'Cairo', Tahoma, sans-serif;font-size:26px;font-weight:800;text-align:center;background:rgba(229,38,47,0.92);border-radius:30px;padding:8px 16px">&#8235;القيادة الميدانية للمركبة&#8236;</p>
+<div style="position:absolute;left:128px;top:360px;width:320px;display:flex;flex-direction:column;align-items:end;gap:24px">
+<div style="display:flex;flex-direction:column;align-items:end;gap:4px;padding:24px;background:rgba(22,27,33,0.9);border-top:4px solid #2FBF8F">
+<p style="font-size:24px;color:#2FBF8F;font-weight:700">&#8235;١ — المحاكاة&#8236;</p>
+<p style="font-size:24px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;التدريب على محاكي القيادة ADMS قبل التشغيل الفعلي&#8236;</p>
+</div>
+<div style="display:flex;flex-direction:column;align-items:end;gap:4px;padding:24px;background:rgba(22,27,33,0.9);border-top:4px solid #E5262F">
+<p style="font-size:24px;color:#E5262F;font-weight:700">&#8235;٢ — القيادة&#8236;</p>
+<p style="font-size:24px;line-height:1.45;color:#D3D8DD;text-align:right">&#8235;قيادة المركبة ميدانياً على المدرج من داخل المقصورة&#8236;</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:end">
+<p style="font-size:24px;letter-spacing:3px;color:#8C959E">OPERATIONAL VIDEO | PANTHER 6×6 · 10</p>
+</div>
+
+</section>
+
+<section class="slide" id="closing" data-transition="fade" style="background:#0D1013;color:#F3EFE9;font-family:'IBM Plex Sans Arabic', Tahoma, sans-serif;text-align:right;padding:128px">
+<img src="media/panther-bg.jpg" alt="مركبة روزنباور بانثر 6×6" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:linear-gradient(270deg, rgba(13,16,19,0.95) 0%, rgba(13,16,19,0.75) 38%, rgba(13,16,19,0) 72%)"></div>
+<div style="position:absolute;right:0;top:0;width:520px;height:12px;background:linear-gradient(270deg, #E5262F 0%, rgba(229,38,47,0) 100%)"></div>
+<div data-build-in="left 1" style="position:absolute;right:128px;top:380px;width:140px;height:8px;background:#E5262F"></div>
+<h1 data-build-in="rise 2" style="position:absolute;right:128px;top:420px;width:900px;font-family:'Cairo', Tahoma, sans-serif;font-size:120px;font-weight:900;line-height:1.15;text-align:right">&#8235;شكرًا لكم&#8236;</h1>
+<p data-build-in="rise 3" style="position:absolute;right:128px;top:590px;width:800px;font-size:32px;line-height:1.5;color:#D3D8DD;text-align:right">&#8235;روزنباور بانثر 6×6 — مركبة استجابة للحوادث الخطرة والمتطورة&#8236;</p>
+<p data-build-in="fade 4" style="position:absolute;right:128px;bottom:64px;width:900px;font-size:24px;letter-spacing:4px;color:#8C959E;text-align:right">PANTHER 6×6 | TECHNICAL BRIEF</p>
+
+</section>
+
+</div></div>
+<div id="notes"></div>
+<div id="grid"></div>
+<div id="bar">
+<button id="prev" aria-label="السابق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button>
+<span id="count">1 / 11</span>
+<button id="next" aria-label="التالي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+<div id="prog"><i></i></div>
+<button id="gridBtn" aria-label="كل الشرائح"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span class="hide-sm">الشرائح</span></button>
+<button id="notesBtn" aria-label="ملاحظات المتحدث"><span>ملاحظات</span></button>
+<button id="fsBtn" aria-label="ملء الشاشة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</div>
 <script>
-(function(){
-'use strict';
-const $ = s => document.querySelector(s);
-const REC=/[?&]rec/.test(location.search); if(REC) document.body.classList.add('rec');
-const simTimers=[]; let panelShownAt=-1, alarmAt=-99;
-function later(fn,s){ if(REC) simTimers.push({t:T+s,fn}); else return setTimeout(fn,s*1000); }
-const ICON = {
-  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
-  bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
-  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="3.2 2.6" stroke-width="3"/></svg>',
-  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 2 5 5"/></svg>',
-  ruler:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg>',
-  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>',
-  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>'
+const NOTES = ["مرحباً بالجميع. نستعرض اليوم مركبة روزنباور بانثر 6×6: المواصفات الفنية، القدرات التشغيلية، ثم توثيق الزيارة الميدانية والتدريب العملي مع الفيديوهات.", "هذه أهم الأرقام في صفحة واحدة: نظام حركة 6×6، قدرة محرك تقارب 700 حصان، خزان ماء 12,500 لتر، ورغوة 1,500 لتر. إضافة إلى سرعة قصوى 115 كم/س، طاقم من سائق و4 إطفائيين، و250 كجم من بودرة DCP.", "منظومة القيادة من فولفو مع ناقل حركة أوتوماتيك، وشاشة تحكم مركزية لتشغيل معدات الإطفاء: قوة دفع المياه، الضغط، خلط الرغوة، ونظام البودرة. الطاقم سائق وأربعة إطفائيين. الصورة من داخل مقصورة محاكي القيادة أثناء سيناريو حريق طائرة.", "منظومة ضخ بتدفق عالٍ. القاذف الأول يصل مداه إلى 30 متراً، والقاذف الثاني يقارب 70 إلى 90 متراً حسب الضغط والإعداد، ما يتيح هجوماً علوياً وأمامياً. التدفق الفعلي يتأثر بإعداد المضخة والضغط وخطوط التصريف.", "الأبعاد الرئيسية: الطول 11.5 متر، العرض 3 أمتار، الارتفاع 4 أمتار. الأنظمة الرئيسية: المراقب العلوي، مقصورة الطاقم، الخزانات، حجرة المضخة، والمحرك ومنظومة الحركة.", "بطاقة المواصفات المختصرة: أبعاد 11.5 × 3 × 4 أمتار، محرك فولفو مع جير أوتوماتيكي، قاذفان بمدى 30 متراً و70 إلى 90 متراً، ومقصورة متقدمة للطاقم. الاستخدام الأساسي: مكافحة حرائق الطائرات والمواد الخطرة، مع دعم التدخل السريع في الحوادث المتطورة.", "ثلاثة أسباب تشغيلية: زمن وصول أقصر بفضل التسارع ونظام 6×6، هجوم أولي كثيف بمعدل ضخ مرتفع وسعات كبيرة، ومرونة في عوامل الإطفاء بين الماء والرغوة والمسحوق الجاف. القرار النهائي يُبنى على تحليل المخاطر وزمن الاستجابة والبنية التحتية والتدريب والصيانة.", "ننتقل إلى توثيق الزيارة: التدريب العملي على محاكي القيادة، جلسة الشرح الفني مع فريق الشركة المصنعة، ثم المعاينة الميدانية المباشرة للمركبة.", "اضغط على الفيديو لتشغيله: المركبة تشغّل القاذف العلوي والقاذف الأمامي معاً على المدرج خلال الزيارة الميدانية.", "فيديوهان من التدريب العملي: الأول على محاكي القيادة، والثاني من داخل مقصورة المركبة أثناء القيادة الميدانية على المدرج. اضغط على كل فيديو لتشغيله.", "شكراً لحسن الاستماع. المجال مفتوح للأسئلة والنقاش."];
+const stage = document.getElementById('stage'), vp = document.getElementById('viewport');
+const slides = [...stage.querySelectorAll('.slide')];
+const N = slides.length;
+let cur = 0, timers = [];
+
+function fit(){
+  const w = vp.clientWidth, h = vp.clientHeight;
+  const s = Math.min(w/1920, h/1080);
+  stage.style.transform = 'scale(' + s + ')';
+}
+window.addEventListener('resize', fit);
+
+function stopVideos(sl){
+  sl.querySelectorAll('video').forEach(v => { v.pause(); v.closest('.vwrap').classList.remove('playing'); });
+}
+function builds(sl){
+  timers.forEach(clearTimeout); timers = [];
+  const els = [...sl.querySelectorAll('[data-build-in]')];
+  els.forEach(e => e.classList.remove('shown'));
+  els.sort((a,b) => (parseInt(a.dataset.buildIn.split(' ')[1])||0) - (parseInt(b.dataset.buildIn.split(' ')[1])||0));
+  els.forEach((e,i) => timers.push(setTimeout(() => e.classList.add('shown'), 350 + i*260)));
+}
+function go(i, instant){
+  i = Math.max(0, Math.min(N-1, i));
+  const prev = cur;
+  slides.forEach((s,k) => {
+    s.classList.toggle('active', k === i);
+    s.classList.toggle('before', k > i);
+  });
+  if (prev !== i) stopVideos(slides[prev]);
+  cur = i;
+  builds(slides[i]);
+  document.getElementById('count').textContent = (i+1) + ' / ' + N;
+  document.querySelector('#prog i').style.width = ((i+1)/N*100) + '%';
+  document.getElementById('notes').textContent = NOTES[i] || '';
+  try { history.replaceState(null, '', '#' + (i+1)); } catch(e) {}
+  document.querySelectorAll('.thumb').forEach((t,k) => t.classList.toggle('cur', k === i));
+}
+const next = () => go(cur+1), prev = () => go(cur-1);
+document.getElementById('next').onclick = next;
+document.getElementById('prev').onclick = prev;
+document.getElementById('prog').onclick = e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  go(Math.floor((e.clientX - r.left) / r.width * N));
 };
-
-/* ---------------- PHASES ---------------- */
-const PARTS = [
-  {n:1,l:'المراقب العلوي',p:[4.3,4.35,0]},
-  {n:2,l:'مقصورة الطاقم',p:[4.9,2.4,1.45]},
-  {n:3,l:'الخزانات',p:[-1.8,3.2,1.5]},
-  {n:4,l:'حجرة المضخة',p:[0.2,1.9,1.55]},
-  {n:5,l:'المحرك والحركة',p:[-3.25,0.75,1.6]}
-];
-const PH = [
- {name:'الجاهزية', x:-3.2, move:0, cam:{o:[15,3.4,12.5],l:[0,1.9,0]}, lights:false,
-  html:`<p class="eyebrow">مركبة استجابة للحوادث الخطرة والمتطورة</p>
-  <h1 class="ttl">روزنباور بانثر 6×6</h1><div class="bar"></div>
-  <p class="sub">عرض فني تنفيذي على شكل سيناريو تشغيلي: نتابع المركبة من الجاهزية في المحطة، مروراً بالبلاغ والتحرك، حتى الوصول والهجوم الأولي والسيطرة على الحادث.</p>
-  <div class="pills" style="margin-bottom:18px"><span class="pill">مواصفات</span><span class="pill t">قدرات تشغيلية</span><span class="pill o">صور الزيارة الميدانية</span></div>
-  <button class="btn" data-go="1">ابدأ السيناريو <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5v14L5 12z"/></svg></button>`},
- {name:'البلاغ والانطلاق', x:70, move:7.5, cam:{o:[10,3,17],l:[1,1.8,0]}, lights:true, alarm:true,
-  html:`<p class="eyebrow">المرحلة 1 — نظرة شاملة وسعات الإطفاء</p>
-  <h2 class="ttl">البلاغ والانطلاق</h2><div class="bar"></div>
-  <p class="sub">ملخص تنفيذي يجمع أهم مواصفات المركبة مع سعات مواد الإطفاء بشكل واضح ومباشر.</p>
-  <div class="grid">
-   <div class="stat" style="--c:var(--teal);animation-delay:.1s"><b>6×6</b><span>نظام الحركة</span></div>
-   <div class="stat" style="--c:#2E8F86;animation-delay:.25s"><b>≈ 700</b><span>حصان — قدرة المحرك</span></div>
-   <div class="stat" style="--c:var(--red);animation-delay:.4s"><b>12,500</b><span>لتر ماء</span></div>
-   <div class="stat" style="--c:var(--orange);animation-delay:.55s"><b>1,500</b><span>لتر رغوة</span></div>
-  </div>
-  <div class="pills"><span class="pill">سرعة قصوى 115 كم/س</span><span class="pill t">الطاقم: سائق + 4 إطفائيين</span><span class="pill o">بودرة DCP: 250 كجم</span></div>`},
- {name:'التحرك نحو الحادث', x:300, move:9, cam:{o:[-15,5.5,9],l:[8,1.8,0]}, lights:true, hud:true,
-  html:`<p class="eyebrow">المرحلة 2 — منظومة القيادة والطاقم</p>
-  <h2 class="ttl">التحرك نحو الحادث</h2><div class="bar"></div>
-  <p class="sub">قدرة حركة عالية مع ناقل أوتوماتيك ومقصورة مهيأة لطاقم الاستجابة الأولية.</p>
-  <div class="card"><h4>شركة فولفو | ناقل حركة أوتوماتيك</h4><p>منظومة القيادة تعتمد على شركة فولفو مع ناقل حركة أوتوماتيك، وتدعمها شاشة تحكم مركزية لمراقبة وتشغيل معدات الإطفاء مثل قوة دفع المياه، ضغط المياه، خلط الماء بالرغوة، ونظام البودرة DCP.</p></div>
-  <div class="card row" style="animation-delay:.2s"><span class="ic">${ICON.users}</span><div><h4>سائق + 4 إطفائيين</h4><p>جاهزية تدخل كاملة لطاقم المركبة.</p></div></div>
-  <img class="thumb" src="media/sim-cockpit.jpg" alt="مقصورة محاكي قيادة بانثر" data-zoom>
-  <p class="note">قيم الأداء مشروطة بتهيئة المركبة والحمولة.</p>`},
- {name:'الوصول والتمركز', x:375, move:6, ease:'out', cam:{o:[1,3.8,18.5],l:[0.3,2.1,0]}, lights:true, hot:true,
-  html:`<p class="eyebrow">المرحلة 3 — الأجزاء الرئيسية والأبعاد</p>
-  <h2 class="ttl">الوصول والتمركز</h2><div class="bar"></div>
-  <p class="sub">توزيع أبرز أنظمة المركبة مع الأبعاد الرئيسية لتسهيل القراءة الفنية. المس رقماً لإبرازه على المركبة.</p>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
-   <div class="stat" style="--c:var(--red)"><b>11.5 م</b><span>الطول</span></div>
-   <div class="stat" style="--c:var(--orange);animation-delay:.15s"><b>3 م</b><span>العرض</span></div>
-   <div class="stat" style="--c:var(--teal);animation-delay:.3s"><b>4 م</b><span>الارتفاع</span></div>
-  </div>
-  <div class="legend">${PARTS.map((p,i)=>`<div class="lg" data-part="${i}" style="animation-delay:${.4+i*.1}s"><span class="num">${p.n}</span>${p.l}</div>`).join('')}</div>`},
- {name:'الهجوم الأولي', x:375, move:0, cam:{o:[-19,10,16],l:[24,2.5,2]}, lights:true, jets:true,
-  html:`<p class="eyebrow">المرحلة 4 — منظومة الضخ والقاذفات</p>
-  <h2 class="ttl">الهجوم الأولي</h2><div class="bar"></div>
-  <p class="sub">تدفق عالٍ ومدى رمي مناسب للتعامل مع حوادث المواد الخطرة والحوادث المتطورة — هجوم علوي وأمامي.</p>
-  <div class="row" style="align-items:center;margin:0 0 12px"><div class="stat" style="--c:var(--red);flex:1"><b>PUMP 9K</b><span>منظومة الضخ</span></div></div>
-  <div class="grid">
-   <div class="stat" style="--c:var(--teal);animation-delay:.2s"><b>30 م</b><span>القاذف الأول (السفلي): مدى يصل إلى 30 متر</span></div>
-   <div class="stat" style="--c:var(--red);animation-delay:.35s"><b>70-90 م</b><span>القاذف الثاني (العلوي): مدى يقارب 70-90 متر حسب الضغط والإعداد</span></div>
-  </div>
-  <p class="note">معدل التدفق يتأثر بإعداد المضخة والضغط وخطوط التصريف.</p>`},
- {name:'السيطرة ومجالات الاستخدام', x:375, move:0, cam:{o:[18,26,40],l:[27,1,3]}, lights:true, jets:'fade',
-  html:`<p class="eyebrow">المرحلة 5 — مجالات الاستخدام</p>
-  <h2 class="ttl">السيطرة على الحادث</h2><div class="bar"></div>
-  <p class="sub">تُستخدم المركبة للتعامل مع الحوادث المتطورة وحوادث المواد الخطرة، ودعم عمليات التدخل السريع والسيطرة على المخاطر المتصاعدة.</p>
-  <div class="card row"><span class="ic" style="--c:var(--red)">${ICON.clock}</span><div><h4>زمن وصول أقصر</h4><p>تسارع قوي ودفع 6×6 لدعم الحركة السريعة نحو موقع البلاغ.</p></div></div>
-  <div class="card row" style="animation-delay:.15s"><span class="ic" style="--c:var(--orange)">${ICON.bolt}</span><div><h4>هجوم أولي كثيف</h4><p>معدل ضخ مرتفع وسعات كبيرة للماء والرغوة لبدء المكافحة فور الوصول.</p></div></div>
-  <div class="card row" style="animation-delay:.3s"><span class="ic" style="--c:var(--teal)">${ICON.gear}</span><div><h4>مرونة عوامل الإطفاء</h4><p>ماء ورغوة، مع خيار مسحوق جاف بحسب التهيئة التشغيلية.</p></div></div>
-  <p class="note">الملاءمة النهائية تُحسم عبر تحليل المخاطر، زمن الاستجابة المطلوب، البنية التحتية، التدريب والصيانة.</p>`},
- {name:'توثيق الزيارة الميدانية', x:375, move:0, cam:{o:[-12,4,-16],l:[1,2,0]}, lights:true, wide:true, orbit:.05,
-  html:`<p class="eyebrow">المرحلة 6 — توثيق الزيارة والتدريب العملي</p>
-  <h2 class="ttl">من الميدان</h2><div class="bar"></div>
-  <p class="sub">صور من التدريب على المحاكاة، جلسة الشرح الفني، والمعاينة الميدانية المباشرة للمركبة. اضغط على أي فيديو لتشغيله.</p>
-  <div class="gal">
-   <figure class="v" style="animation-delay:.05s"><video src="media/video-drive.mp4" poster="media/still-v3.jpg" playsinline preload="none" controls></video><figcaption>القيادة الميدانية للمركبة</figcaption></figure>
-   <figure class="v" style="animation-delay:.15s"><img src="media/sim-cockpit.jpg" alt="مقصورة محاكي القيادة" data-zoom style="aspect-ratio:16/9"><figcaption>مقصورة محاكي القيادة</figcaption></figure>
-   <figure style="animation-delay:.25s"><img src="media/photo-sim.jpg" alt="تدريب المحاكاة" data-zoom><figcaption>تدريب المحاكاة</figcaption></figure>
-   <figure style="animation-delay:.35s"><img src="media/photo-visit.jpg" alt="معاينة ميدانية" data-zoom><figcaption>معاينة ميدانية</figcaption></figure>
-   <figure style="animation-delay:.45s"><video src="media/video-spray.mp4" poster="media/still-v1.jpg" playsinline preload="none" controls style="aspect-ratio:3/4"></video><figcaption>الفيديو التشغيلي</figcaption></figure>
-   <figure style="animation-delay:.55s"><video src="media/video-sim.mp4" poster="media/still-v2.jpg" playsinline preload="none" controls style="aspect-ratio:3/4"></video><figcaption>فيديو المحاكاة</figcaption></figure>
-   <figure class="v" style="animation-delay:.65s"><img src="media/photo-briefing.jpg" alt="جلسة الشرح الفني" data-zoom style="aspect-ratio:16/9"><figcaption>جلسة الشرح الفني</figcaption></figure>
-   <figure class="v" style="animation-delay:.75s"><img src="media/photo-spray.jpg" alt="تشغيل القاذف العلوي" data-zoom style="aspect-ratio:16/9;object-position:50% 40%"><figcaption>تشغيل القاذف العلوي</figcaption></figure>
-  </div>`},
- {name:'الختام', x:375, move:0, cam:{o:[14,4.2,14],l:[0,2,0]}, lights:true, orbit:.12,
-  html:`<p class="eyebrow" style="letter-spacing:4px">ROSENBAUER</p>
-  <h2 class="ttl" style="font-size:44px;direction:ltr;text-align:right;margin:0">PANTHER</h2>
-  <p class="sub" style="font:800 19px 'Cairo';margin:4px 0 0">مركبة الإطفاء والإنقاذ في المطارات</p><div class="bar"></div>
-  <div class="card row"><span class="ic">${ICON.ruler}</span><div><h4>الأبعاد</h4><p>الطول: 11.5 متر | العرض: 3 متر | الارتفاع: 4 متر</p></div></div>
-  <div class="card row" style="animation-delay:.1s"><span class="ic">${ICON.gear}</span><div><h4>المحرك</h4><p>شركة Volvo — جير أوتوماتيكي (Automatic)</p></div></div>
-  <div class="card row" style="animation-delay:.2s"><span class="ic">${ICON.bolt}</span><div><h4>القاذفات</h4><p>القاذف الأول: مدى يصل إلى 30 متر<br>القاذف الثاني: مدى يصل إلى 70-90 متر</p></div></div>
-  <div class="card row" style="animation-delay:.3s"><span class="ic">${ICON.users}</span><div><h4>المقصورة</h4><p>مقصورة متقدمة ومريحة للطاقم مجهزة بأحدث أنظمة التحكم والمراقبة</p></div></div>
-  <div class="card row" style="animation-delay:.4s"><span class="ic">${ICON.shield}</span><div><h4>الاستخدام</h4><p>مكافحة حرائق الطائرات والمواد الخطرة في ساحات المطارات</p></div></div>
-  <h3 class="h" style="font-size:30px;margin:16px 0 12px">شكرًا لكم</h3>
-  <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-go="0" style="animation:none">إعادة السيناريو</button><a class="btn ghost" href="slides/" style="text-decoration:none">عرض الشرائح</a></div>`}
-];
-
-/* ---------------- THREE SETUP ---------------- */
-let renderer;
-try{
-  renderer = new THREE.WebGLRenderer({canvas:$('#c'), antialias:true, powerPreference:'high-performance'});
-}catch(e){ $('#err').style.display='block'; document.querySelector('#load .sp').style.display='none'; return; }
-const DPR = Math.min(window.devicePixelRatio||1, 2);
-renderer.setPixelRatio(/[?&]rec/.test(location.search)?0.8:DPR);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.35;
-renderer.useLegacyLights = true;
-renderer.shadowMap.enabled = !/[?&]rec/.test(location.search);
-renderer.shadowMap.type = /[?&]rec/.test(location.search)?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;
-
-const scene = new THREE.Scene();
-const SKY = new THREE.Color(0x0b1220);
-scene.background = SKY;
-scene.fog = new THREE.FogExp2(0x0b1220, 0.0042);
-const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 3000);
-camera.position.set(20,6,20);
-
-// env map for reflections
-(function(){
-  const pm = new THREE.PMREMGenerator(renderer);
-  const es = new THREE.Scene();
-  es.background = new THREE.Color(0x1a2433);
-  const add=(w,h,x,y,z,c,i)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide}));m.position.set(x,y,z);m.lookAt(0,0,0);m.material.color.multiplyScalar(i);es.add(m);};
-  add(30,6,0,12,-20,0xffffff,2.2); add(20,4,22,8,6,0xffd2a0,1.6); add(20,4,-22,8,6,0x9fc8ff,1.4); add(60,60,0,-15,0,0x222222,1);
-  scene.environment = pm.fromScene(es,0.04).texture;
-})();
-
-/* lights */
-scene.add(new THREE.HemisphereLight(0x7f93bd, 0x1a1a1e, 0.9));
-const moon = new THREE.DirectionalLight(0xbcd2ff, 0.75);
-moon.position.set(40,60,30); moon.castShadow = true;
-moon.shadow.mapSize.set(1024,1024);
-Object.assign(moon.shadow.camera,{left:-22,right:22,top:22,bottom:-22,near:1,far:200});
-moon.shadow.bias = -0.0008;
-scene.add(moon); scene.add(moon.target);
-
-/* textures */
-function canvasTex(w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');draw(g,w,h);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1]);}return t;}
-const asphalt = canvasTex(512,512,(g,w,h)=>{g.fillStyle='#1b1d20';g.fillRect(0,0,w,h);for(let i=0;i<9000;i++){const v=20+Math.random()*30|0;g.fillStyle=`rgba(${v},${v},${v+3},${Math.random()*.6})`;g.fillRect(Math.random()*w,Math.random()*h,2,2);}for(let i=0;i<14;i++){g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1+Math.random()*2;g.beginPath();let x=Math.random()*w,y=Math.random()*h;g.moveTo(x,y);for(let k=0;k<6;k++){x+=(Math.random()-.5)*80;y+=(Math.random()-.5)*80;g.lineTo(x,y);}g.stroke();}},[60,60]);
-const glowTex = canvasTex(64,64,(g)=>{const r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.25,'rgba(255,255,255,.75)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,64,64);});
-const smokeTex = canvasTex(128,128,(g)=>{for(let i=0;i<9;i++){const x=40+Math.random()*48,y=40+Math.random()*48,rad=24+Math.random()*30;const r=g.createRadialGradient(x,y,0,x,y,rad);r.addColorStop(0,'rgba(255,255,255,.35)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,128,128);}});
-
-/* ground */
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(3000,3000), new THREE.MeshStandardMaterial({map:asphalt,color:0x8a8f96,roughness:.95,metalness:0}));
-ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-// runway strip
-const runTex = canvasTex(1024,128,(g,w,h)=>{g.fillStyle='#2a2d31';g.fillRect(0,0,w,h);for(let i=0;i<5000;i++){const v=35+Math.random()*25|0;g.fillStyle=`rgba(${v},${v},${v},.5)`;g.fillRect(Math.random()*w,Math.random()*h,2,2);}g.fillStyle='rgba(235,235,235,.9)';for(let x=0;x<w;x+=128){g.fillRect(x+20,h/2-3,70,6);}g.fillStyle='rgba(240,200,60,.85)';g.fillRect(0,6,w,4);g.fillRect(0,h-10,w,4);},[12,1]);
-const runway = new THREE.Mesh(new THREE.PlaneGeometry(900,34), new THREE.MeshStandardMaterial({map:runTex,roughness:.85,color:0xb5b8bd}));
-runway.rotation.x=-Math.PI/2; runway.position.set(330,0.02,0); runway.receiveShadow=true; scene.add(runway);
-// edge lights
-(function(){
-  const geo=new THREE.SphereGeometry(.18,8,6);
-  const mB=new THREE.MeshBasicMaterial({color:0x3d7dff}); const mG=new THREE.MeshBasicMaterial({color:0x37ff9a});
-  const n=60; const ib=new THREE.InstancedMesh(geo,mB,n*2); const m=new THREE.Matrix4(); let k=0;
-  for(let i=0;i<n;i++){const x=-110+i*15; m.setPosition(x,.2,17.5); ib.setMatrixAt(k++,m); m.setPosition(x,.2,-17.5); ib.setMatrixAt(k++,m);} scene.add(ib);
-  const ig=new THREE.InstancedMesh(geo,mG,40); k=0; for(let i=0;i<40;i++){m.setPosition(-60+i*12,.05,0);ig.setMatrixAt(k++,m);} scene.add(ig);
-  // glow sprites for lights
-  const pts=[];for(let i=0;i<n;i++){const x=-110+i*15;pts.push(x,.3,17.5,x,.3,-17.5);}
-  const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
-  scene.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x4d8bff,size:2.2,map:glowTex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})));
-})();
-// distant airport skyline
-(function(){
-  const winTex = canvasTex(128,128,(g,w,h)=>{g.fillStyle='#0d1118';g.fillRect(0,0,w,h);for(let y=6;y<h;y+=12)for(let x=4;x<w;x+=10){if(Math.random()<.55){g.fillStyle=Math.random()<.8?'#ffd9a0':'#a8d4ff';g.globalAlpha=.5+Math.random()*.5;g.fillRect(x,y,6,5);}}g.globalAlpha=1;});
-  const mat=new THREE.MeshStandardMaterial({color:0x111620,emissive:0xffffff,emissiveMap:winTex,emissiveIntensity:.8,roughness:.8});
-  for(let i=0;i<22;i++){const w=20+Math.random()*60,h=8+Math.random()*28,d=20+Math.random()*30;const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);b.position.set(-150+i*45+Math.random()*20,h/2,-170-Math.random()*90);scene.add(b);}
-  // tower
-  const tw=new THREE.Mesh(new THREE.CylinderGeometry(2.5,3.5,55,12),new THREE.MeshStandardMaterial({color:0x2a313b,roughness:.7}));tw.position.set(260,27.5,-140);scene.add(tw);
-  const cab=new THREE.Mesh(new THREE.CylinderGeometry(7,5,7,12),new THREE.MeshStandardMaterial({color:0x1b2733,emissive:0x5fa8ff,emissiveIntensity:.5,metalness:.6,roughness:.2}));cab.position.set(260,58,-140);scene.add(cab);
-  const bl=new THREE.Mesh(new THREE.SphereGeometry(.8,8,8),new THREE.MeshBasicMaterial({color:0xff2a2a}));bl.position.set(260,63,-140);scene.add(bl);
-  // stars
-  const sp=[];for(let i=0;i<900;i++){const t=Math.random()*Math.PI*2,p=Math.random()*1.25;const r=1400;sp.push(r*Math.cos(t)*Math.cos(p),80+r*Math.sin(p)*.6,r*Math.sin(t)*Math.cos(p));}
-  const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
-  const stars=new THREE.Points(sg,new THREE.PointsMaterial({color:0xcfd8ff,size:2.2,sizeAttenuation:false,fog:false,transparent:true,opacity:.75}));scene.add(stars);
-})();
-
-/* ---------------- STATION ---------------- */
-(function(){
-  const g=new THREE.Group();
-  const wall=new THREE.MeshStandardMaterial({color:0x3a4048,roughness:.8});
-  const red=new THREE.MeshStandardMaterial({color:0xb3141f,roughness:.5,metalness:.2});
-  const back=new THREE.Mesh(new THREE.BoxGeometry(.6,8,14),wall);back.position.set(-10.5,4,0);g.add(back);
-  for(const z of [-6.8,6.8]){const s=new THREE.Mesh(new THREE.BoxGeometry(13.4,8,.6),wall);s.position.set(-4,4,z);s.castShadow=true;g.add(s);}
-  const roof=new THREE.Mesh(new THREE.BoxGeometry(14.6,.6,14.6),wall);roof.position.set(-4,8.3,0);roof.castShadow=true;g.add(roof);
-  const fascia=new THREE.Mesh(new THREE.BoxGeometry(.4,1.6,14.6),red);fascia.position.set(3.1,7.6,0);g.add(fascia);
-  const sign=canvasTex(1024,128,(c,w,h)=>{c.fillStyle='#b3141f';c.fillRect(0,0,w,h);c.fillStyle='#fff';c.font='bold 64px Tahoma, Arial';c.textAlign='center';c.textBaseline='middle';c.direction='rtl';c.fillText('محطة الإنقاذ ومكافحة الحريق  ·  ARFF',w/2,h/2+4);});
-  const sm=new THREE.Mesh(new THREE.PlaneGeometry(13.6,1.5),new THREE.MeshBasicMaterial({map:sign}));sm.position.set(3.32,7.6,0);sm.rotation.y=Math.PI/2;g.add(sm);
-  // side annex buildings
-  for(const z of [-14,14]){const a=new THREE.Mesh(new THREE.BoxGeometry(14,6,8),wall);a.position.set(-4,3,z);a.castShadow=true;g.add(a);}
-  // bay lights
-  const strip=new THREE.Mesh(new THREE.BoxGeometry(10,.15,.4),new THREE.MeshBasicMaterial({color:0xfff2d6}));strip.position.set(-4,7.9,0);g.add(strip);
-  const bay=new THREE.PointLight(0xffe2b8,2.2,26,2);bay.position.set(-4,7,0);g.add(bay);
-  // floor markings
-  const fm=new THREE.Mesh(new THREE.PlaneGeometry(13,.25),new THREE.MeshBasicMaterial({color:0xf0c040}));fm.rotation.x=-Math.PI/2;fm.position.set(-4,.03,-3.4);g.add(fm);const fm2=fm.clone();fm2.position.z=3.4;g.add(fm2);
-  // apron road from station to runway
-  const ap=new THREE.Mesh(new THREE.PlaneGeometry(80,14),new THREE.MeshStandardMaterial({color:0x3a3d42,roughness:.9}));ap.rotation.x=-Math.PI/2;ap.position.set(25,.015,0);ap.receiveShadow=true;g.add(ap);
-  scene.add(g);
-})();
-
-/* ---------------- AIRCRAFT (incident) ---------------- */
-const INC = new THREE.Vector3(452,0,6);
-(function(){
-  const g=new THREE.Group(); g.position.copy(INC);
-  const white=new THREE.MeshStandardMaterial({color:0xdfe3e8,roughness:.45,metalness:.3});
-  const grey=new THREE.MeshStandardMaterial({color:0x8d949c,roughness:.5,metalness:.5});
-  const burnt=new THREE.MeshStandardMaterial({color:0x2b2623,roughness:.9});
-  const fus=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,44,24),white);fus.rotation.x=Math.PI/2;fus.position.y=4;fus.castShadow=true;g.add(fus);
-  const nose=new THREE.Mesh(new THREE.SphereGeometry(2.4,24,16,0,Math.PI*2,0,Math.PI/2),white);nose.rotation.x=Math.PI/2;nose.position.set(0,4,22);nose.scale.set(1,1.6,1);g.add(nose);
-  const tail=new THREE.Mesh(new THREE.ConeGeometry(2.4,8,24),white);tail.rotation.x=-Math.PI/2;tail.position.set(0,4.4,-26);g.add(tail);
-  const fin=new THREE.Mesh(new THREE.BoxGeometry(.4,8,6),white);fin.position.set(0,9,-24);fin.rotation.x=-.35;g.add(fin);
-  const wingGeo=new THREE.BoxGeometry(17,.5,5.5);
-  for(const s of [-1,1]){const w=new THREE.Mesh(wingGeo,s<0?burnt:white);w.position.set(s*10,3,1);w.rotation.y=s*.25;w.castShadow=true;g.add(w);
-    const eng=new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.35,4.2,18),s<0?burnt:grey);eng.rotation.x=Math.PI/2;eng.position.set(s*7.5,1.65,2.6);g.add(eng);
-    const hs=new THREE.Mesh(new THREE.BoxGeometry(6,.3,2.4),white);hs.position.set(s*3.8,5,-24);g.add(hs);}
-  const win=canvasTex(512,32,(c,w,h)=>{c.fillStyle='#dfe3e8';c.fillRect(0,0,w,h);c.fillStyle='#1d2a38';for(let x=8;x<w;x+=14)c.fillRect(x,10,8,12);});
-  for(const s of [-1,1]){const wp=new THREE.Mesh(new THREE.PlaneGeometry(36,.9),new THREE.MeshStandardMaterial({map:win,roughness:.4}));wp.position.set(s*2.41,4.6,0);wp.rotation.y=s*Math.PI/2;g.add(wp);}
-  for(const [x,z] of [[0,17],[-3,-1],[3,-1]]){const lg=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,.5,12),burnt);lg.rotation.z=Math.PI/2;lg.position.set(x,.6,z);g.add(lg);}
-  // fuel spill (dark sheen)
-  const spill=new THREE.Mesh(new THREE.CircleGeometry(9,32),new THREE.MeshStandardMaterial({color:0x0b0b0c,roughness:.15,metalness:.6}));spill.rotation.x=-Math.PI/2;spill.position.set(-34,.03,-3);spill.scale.set(1.4,1,1);g.add(spill);
-  scene.add(g);
-})();
-const fireLight = new THREE.PointLight(0xff7a2a, 0, 90, 1.6); fireLight.position.set(INC.x-14,6,INC.z-2); scene.add(fireLight);
-
-/* ---------------- PANTHER 6x6 ---------------- */
-const truck = new THREE.Group(); scene.add(truck);
-const fillA=new THREE.PointLight(0xfff0e0,1.6,34,1.4);fillA.position.set(8,9,12);truck.add(fillA);
-const fillB=new THREE.PointLight(0xa8c4ff,1.0,34,1.4);fillB.position.set(-9,7,-11);truck.add(fillB);
-const fillC=new THREE.PointLight(0xffffff,.8,30,1.4);fillC.position.set(-2,8,13);truck.add(fillC);
-const body = new THREE.Group(); truck.add(body);
-const M = {
-  red:new THREE.MeshStandardMaterial({color:0xc8102e,roughness:.32,metalness:.35,envMapIntensity:1.2}),
-  black:new THREE.MeshStandardMaterial({color:0x0e0f11,roughness:.28,metalness:.6,envMapIntensity:1.2}),
-  matte:new THREE.MeshStandardMaterial({color:0x151618,roughness:.85,metalness:.1}),
-  glass:new THREE.MeshStandardMaterial({color:0x0b1622,roughness:.05,metalness:.95,envMapIntensity:1.6,transparent:true,opacity:.92}),
-  chrome:new THREE.MeshStandardMaterial({color:0xb8bec6,roughness:.2,metalness:1}),
-  tire:new THREE.MeshStandardMaterial({color:0x121212,roughness:.95}),
-  rim:new THREE.MeshStandardMaterial({color:0x1e2124,roughness:.4,metalness:.7}),
-  white:new THREE.MeshStandardMaterial({color:0xe9ecef,roughness:.4})
+document.getElementById('notesBtn').onclick = () => document.getElementById('notes').classList.toggle('on');
+document.getElementById('fsBtn').onclick = () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+  setTimeout(fit, 300);
 };
-function extrude(pts,depth,mat,bevel){const s=new THREE.Shape();s.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)s.lineTo(pts[i][0],pts[i][1]);s.closePath();const geo=new THREE.ExtrudeGeometry(s,{depth,bevelEnabled:true,bevelThickness:bevel||.06,bevelSize:bevel||.06,bevelSegments:3,curveSegments:8});geo.translate(0,0,-depth/2);const m=new THREE.Mesh(geo,mat);m.castShadow=true;m.receiveShadow=true;return m;}
-// rear body (red)
-body.add(extrude([[-5.7,0.95],[3.25,0.95],[3.25,3.38],[-5.35,3.38],[-5.7,3.05]],2.84,M.red));
-// cab (black)
-body.add(extrude([[3.3,0.78],[5.98,0.78],[6.04,1.45],[5.72,1.68],[4.72,3.28],[3.3,3.33]],2.74,M.black));
-// cab red doors
-for(const s of [-1,1]){
-  const sh=new THREE.Shape();sh.moveTo(3.55,0.95);sh.lineTo(5.72,0.95);sh.lineTo(5.72,1.55);sh.lineTo(5.38,1.82);sh.lineTo(3.55,1.82);sh.closePath();
-  const d=new THREE.Mesh(new THREE.ShapeGeometry(sh),M.red);d.position.z=s*1.445;if(s<0)d.rotation.y=Math.PI,d.position.x=0,d.scale.x=-1;body.add(d);
-  const wsh=new THREE.Shape();wsh.moveTo(3.6,1.95);wsh.lineTo(5.3,1.95);wsh.lineTo(4.72,3.1);wsh.lineTo(3.6,3.14);wsh.closePath();
-  const w=new THREE.Mesh(new THREE.ShapeGeometry(wsh),M.glass);w.position.z=s*1.45;if(s<0)w.scale.x=-1,w.rotation.y=Math.PI;body.add(w);
-  const pil=new THREE.Mesh(new THREE.BoxGeometry(.08,1.2,.02),M.black);pil.position.set(4.35,2.55,s*1.455);body.add(pil);
+document.addEventListener('fullscreenchange', () => setTimeout(fit, 50));
+
+// overview grid
+const grid = document.getElementById('grid');
+function buildGrid(){
+  if (grid.childElementCount) return;
+  slides.forEach((s,k) => {
+    const t = document.createElement('div'); t.className = 'thumb';
+    const inner = document.createElement('div'); inner.className = 'inner';
+    const c = s.cloneNode(true); c.classList.add('active');
+    c.querySelectorAll('video').forEach(v => { const img = document.createElement('img'); img.src = v.poster; img.style.cssText = 'width:100%;height:100%;object-fit:cover'; v.replaceWith(img); });
+    c.querySelectorAll('iframe,.vplay').forEach(f => f.remove());
+    inner.appendChild(c); t.appendChild(inner);
+    const b = document.createElement('b'); b.textContent = k+1; t.appendChild(b);
+    t.onclick = () => { grid.classList.remove('on'); go(k); };
+    grid.appendChild(t);
+  });
 }
-// windshield
-(function(){const a=new THREE.Vector2(5.74,1.72),b=new THREE.Vector2(4.76,3.24);const len=a.distanceTo(b);const ws=new THREE.Mesh(new THREE.BoxGeometry(len,.04,2.62),M.glass);ws.position.set((a.x+b.x)/2+.045,(a.y+b.y)/2+.03,0);ws.rotation.z=Math.atan2(b.y-a.y,b.x-a.x);body.add(ws);
- const wiper=new THREE.Mesh(new THREE.BoxGeometry(.9,.03,.05),M.black);wiper.position.set(5.6,1.85,-.4);wiper.rotation.z=Math.atan2(b.y-a.y,b.x-a.x);body.add(wiper);})();
-// front bumper + chevrons
-const bump=new THREE.Mesh(new THREE.BoxGeometry(.5,.62,2.9),M.black);bump.position.set(6.1,.95,0);bump.castShadow=true;body.add(bump);
-const chev=canvasTex(512,128,(g,w,h)=>{g.fillStyle='#e8ebee';g.fillRect(0,0,w,h);g.fillStyle='#c8102e';for(let x=-h;x<w+h;x+=64){g.beginPath();g.moveTo(x,h);g.lineTo(x+32,h);g.lineTo(x+32+h,0);g.lineTo(x+h,0);g.closePath();g.fill();}});
-for(const s of [-1,1]){const cm=new THREE.Mesh(new THREE.PlaneGeometry(.95,.36),new THREE.MeshStandardMaterial({map:chev,roughness:.4}));cm.position.set(6.356,1.0,s*.95);cm.rotation.y=Math.PI/2;body.add(cm);}
-// headlights
-const hlMat=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xfff3dd,emissiveIntensity:2.5});
-for(const s of [-1,1]){const h=new THREE.Mesh(new THREE.BoxGeometry(.06,.12,.55),hlMat);h.position.set(6.37,1.27,s*.95);body.add(h);
-  const sl=new THREE.SpotLight(0xfff1dc,2.2,70,.5,.55,1.2);sl.position.set(6.4,1.3,s*.95);sl.target.position.set(30,0,s*2);body.add(sl);body.add(sl.target);}
-// skirt + chassis
-const skirt=new THREE.Mesh(new THREE.BoxGeometry(11.6,.42,2.5),M.matte);skirt.position.set(.1,.72,0);body.add(skirt);
-// side white stripe + PANTHER text
-const pTex=canvasTex(1024,128,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#ffffff';g.fillRect(0,54,w,10);g.font='italic 900 78px Arial Black, Arial';g.textBaseline='middle';g.fillStyle='#ffffff';g.fillText('PANTHER',w-430,h/2+2);g.fillStyle='rgba(255,255,255,.75)';g.font='bold 34px Arial';g.fillText('rosenbauer',40,h/2+3);});
-for(const s of [-1,1]){const tp=new THREE.Mesh(new THREE.PlaneGeometry(8.4,1.05),new THREE.MeshBasicMaterial({map:pTex,transparent:true,depthWrite:false}));tp.position.set(-1.2,1.33,s*1.485);if(s<0)tp.rotation.y=Math.PI;body.add(tp);}
-// roller shutters
-const shut=canvasTex(128,256,(g,w,h)=>{g.fillStyle='#8f969e';g.fillRect(0,0,w,h);for(let y=0;y<h;y+=8){g.fillStyle='#6e757d';g.fillRect(0,y,w,2);g.fillStyle='#a9b0b8';g.fillRect(0,y+2,w,1);}});
-for(const s of [-1,1]) for(const [x0,x1] of [[-5.3,-2.9],[-2.6,-0.2],[0.1,2.95]]){const sp=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,1.72),new THREE.MeshStandardMaterial({map:shut,roughness:.5,metalness:.6}));sp.position.set((x0+x1)/2,2.5,s*1.487);if(s<0)sp.rotation.y=Math.PI;body.add(sp);}
-// roof rails & gear
-for(const s of [-1,1]){const r=new THREE.Mesh(new THREE.BoxGeometry(8.4,.08,.08),M.chrome);r.position.set(-1.1,3.72,s*1.25);body.add(r);for(let x=-5;x<3;x+=1.6){const p=new THREE.Mesh(new THREE.BoxGeometry(.06,.34,.06),M.chrome);p.position.set(x,3.55,s*1.25);body.add(p);}}
-const box1=new THREE.Mesh(new THREE.BoxGeometry(2.2,.35,1.6),M.matte);box1.position.set(-3.6,3.55,0);body.add(box1);
-// rear lights
-for(const s of [-1,1]){const rl=new THREE.Mesh(new THREE.BoxGeometry(.05,.5,.25),new THREE.MeshStandardMaterial({color:0x550000,emissive:0xff1a1a,emissiveIntensity:1.4}));rl.position.set(-5.78,1.3,s*1.2);body.add(rl);}
-// mirrors
-for(const s of [-1,1]){const arm=new THREE.Mesh(new THREE.BoxGeometry(.06,.06,.6),M.black);arm.position.set(5.5,2.9,s*1.68);body.add(arm);const mi=new THREE.Mesh(new THREE.BoxGeometry(.12,.75,.32),M.black);mi.position.set(5.55,2.55,s*1.98);body.add(mi);}
-// light bar
-const lbBlue=[];
-for(const s of [-1,1]){const lb=new THREE.Mesh(new THREE.BoxGeometry(.3,.16,.7),new THREE.MeshStandardMaterial({color:0x061a40,emissive:0x2a6bff,emissiveIntensity:0}));lb.position.set(4.95,3.42,s*.6);body.add(lb);lbBlue.push(lb);}
-const lbCenter=new THREE.Mesh(new THREE.BoxGeometry(.3,.16,.5),new THREE.MeshStandardMaterial({color:0x300000,emissive:0xff2020,emissiveIntensity:0}));lbCenter.position.set(4.95,3.42,0);body.add(lbCenter);
-const beaconL=new THREE.PointLight(0x2a6bff,0,22,2);beaconL.position.set(5.1,3.8,1);body.add(beaconL);
-const beaconR=new THREE.PointLight(0x2a6bff,0,22,2);beaconR.position.set(5.1,3.8,-1);body.add(beaconR);
-// roof turret (HRET-style boom)
-const turret=new THREE.Group();turret.position.set(4.05,3.33,0);body.add(turret);
-const tb=new THREE.Mesh(new THREE.CylinderGeometry(.42,.5,.42,20),M.red);tb.position.y=.21;turret.add(tb);
-const pitch=new THREE.Group();pitch.position.y=.5;turret.add(pitch);
-const arm1=new THREE.Mesh(new THREE.BoxGeometry(2.9,.22,.26),M.black);arm1.position.x=1.35;arm1.castShadow=true;pitch.add(arm1);
-const noz=new THREE.Mesh(new THREE.CylinderGeometry(.13,.2,.7,14),M.black);noz.rotation.z=-Math.PI/2;noz.position.x=3.1;pitch.add(noz);
-const nozRed=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.18,14),M.red);nozRed.rotation.z=-Math.PI/2;nozRed.position.x=2.75;pitch.add(nozRed);
-const roofTip=new THREE.Object3D();roofTip.position.x=3.5;pitch.add(roofTip);
-pitch.rotation.z=.05;
-// bumper turret
-const bt=new THREE.Group();bt.position.set(6.4,1.1,0);body.add(bt);
-const btb=new THREE.Mesh(new THREE.SphereGeometry(.2,14,10),M.red);bt.add(btb);
-const btn=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,.55,12),M.black);btn.rotation.z=-Math.PI/2;btn.position.x=.3;bt.add(btn);
-const bumpTip=new THREE.Object3D();bumpTip.position.x=.6;bt.add(bumpTip);
-// wheels
-const wheels=[];
-const tireGeo=new THREE.CylinderGeometry(.74,.74,.64,32);tireGeo.rotateX(Math.PI/2);
-const rimGeo=new THREE.CylinderGeometry(.42,.42,.66,20);rimGeo.rotateX(Math.PI/2);
-const lugGeo=new THREE.CylinderGeometry(.12,.12,.68,8);lugGeo.rotateX(Math.PI/2);
-const treadTex=canvasTex(256,32,(g,w,h)=>{g.fillStyle='#151515';g.fillRect(0,0,w,h);g.fillStyle='#050505';for(let x=0;x<w;x+=16){g.beginPath();g.moveTo(x,0);g.lineTo(x+8,0);g.lineTo(x+14,h/2);g.lineTo(x+8,h);g.lineTo(x,h);g.lineTo(x+6,h/2);g.fill();}},[6,1]);
-const tireMat=new THREE.MeshStandardMaterial({color:0x2a2a2a,map:treadTex,roughness:.95});
-for(const x of [4.45,-2.35,-4.1]) for(const s of [-1,1]){
-  const w=new THREE.Group();w.position.set(x,.74,s*1.2);
-  const t=new THREE.Mesh(tireGeo,[tireMat,M.tire,M.tire]);t.castShadow=true;w.add(t);
-  const r=new THREE.Mesh(rimGeo,M.rim);w.add(r);const l=new THREE.Mesh(lugGeo,M.chrome);w.add(l);
-  for(let k=0;k<6;k++){const sp=new THREE.Mesh(new THREE.BoxGeometry(.06,.6,.05),M.matte);sp.rotation.z=k*Math.PI/3;sp.position.z=s*.33;w.add(sp);}
-  truck.add(w);wheels.push(w);
-}
-// wheel arches (black)
-for(const x of [4.45,-3.22]) for(const s of [-1,1]){const ar=new THREE.Mesh(new THREE.TorusGeometry(x>0?.95:.95,.09,8,24,Math.PI),M.black);ar.position.set(x,.78,s*1.46);if(x<0)ar.scale.x=1.9;truck.add(ar);}
-// shadow blob under truck
-const blob=new THREE.Mesh(new THREE.PlaneGeometry(13,4),new THREE.MeshBasicMaterial({map:glowTex,color:0x000000,transparent:true,opacity:.55,depthWrite:false}));blob.rotation.x=-Math.PI/2;blob.position.y=.03;truck.add(blob);
-truck.traverse(o=>{if(o.isMesh)o.castShadow=true;});
+function sizeThumbs(){ grid.querySelectorAll('.thumb').forEach(t => { t.querySelector('.inner').style.transform = 'scale(' + (t.clientWidth/1920) + ')'; }); }
+document.getElementById('gridBtn').onclick = () => {
+  buildGrid(); grid.classList.toggle('on'); sizeThumbs();
+  document.querySelectorAll('.thumb').forEach((t,k) => t.classList.toggle('cur', k === cur));
+};
+window.addEventListener('resize', sizeThumbs);
 
-/* ---------------- PARTICLES ---------------- */
-function makePoints(n,size,color,blend,tex,opacity){const geo=new THREE.BufferGeometry();const pos=new Float32Array(n*3).fill(-999);const col=new Float32Array(n*3);geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));const mat=new THREE.PointsMaterial({size,map:tex,vertexColors:true,transparent:true,opacity:opacity||1,depthWrite:false,blending:blend,color});const p=new THREE.Points(geo,mat);p.frustumCulled=false;scene.add(p);return {p,pos,col,vel:new Float32Array(n*3),life:new Float32Array(n).fill(99),max:new Float32Array(n).fill(1),n};}
-const FIRE=makePoints(700,2.6,0xffffff,THREE.AdditiveBlending,glowTex);
-const SMOKE=makePoints(260,10,0xffffff,THREE.NormalBlending,smokeTex,.55);
-const WATER=makePoints(2600,.38,0xffffff,THREE.AdditiveBlending,glowTex,.7);
-const MIST=makePoints(500,3.5,0xffffff,THREE.AdditiveBlending,glowTex,.35);
-const fireSrc=[{p:[INC.x-7.5,1.8,INC.z+2.6],r:1.6,w:.45},{p:[INC.x-14,2.6,INC.z+1],r:3.5,w:.2},{p:[INC.x-34,.2,INC.z-3],r:7,w:.35}];
-let fireLevel=1, smokeLevel=1;
-function pickSrc(){let r=Math.random(),a=0;for(const s of fireSrc){a+=s.w;if(r<=a)return s;}return fireSrc[0];}
-function updFire(dt){
-  const F=FIRE;for(let i=0;i<F.n;i++){F.life[i]+=dt;const k=i*3;
-    if(F.life[i]>F.max[i]){ if(Math.random()<fireLevel){const s=pickSrc();const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*s.r;F.pos[k]=s.p[0]+Math.cos(a)*r*1.3;F.pos[k+1]=s.p[1]+Math.random()*.4;F.pos[k+2]=s.p[2]+Math.sin(a)*r;F.vel[k]=(Math.random()-.5)*.8;F.vel[k+1]=2+Math.random()*3;F.vel[k+2]=(Math.random()-.5)*.8;F.life[i]=0;F.max[i]=.6+Math.random()*1.1;} else {F.pos[k+1]=-999;continue;} }
-    F.vel[k+1]+=dt*1.5;F.pos[k]+=F.vel[k]*dt+Math.sin(T*3+i)*.01;F.pos[k+1]+=F.vel[k+1]*dt;F.pos[k+2]+=F.vel[k+2]*dt;
-    const u=F.life[i]/F.max[i];const f=(1-u)*.55;F.col[k]=f*(1.0)+.08*u;F.col[k+1]=f*(.62-u*.5);F.col[k+2]=f*(.16-u*.16);}
-  F.p.geometry.attributes.position.needsUpdate=true;F.p.geometry.attributes.color.needsUpdate=true;
-  const S=SMOKE;for(let i=0;i<S.n;i++){S.life[i]+=dt;const k=i*3;
-    if(S.life[i]>S.max[i]){ if(Math.random()<smokeLevel){const s=pickSrc();S.pos[k]=s.p[0]+(Math.random()-.5)*s.r;S.pos[k+1]=s.p[1]+2+Math.random()*2;S.pos[k+2]=s.p[2]+(Math.random()-.5)*s.r;S.vel[k]=.6+Math.random()*.8;S.vel[k+1]=1.8+Math.random()*1.5;S.vel[k+2]=-.4+Math.random()*.4;S.life[i]=0;S.max[i]=5+Math.random()*4;} else {S.pos[k+1]=-999;continue;} }
-    S.pos[k]+=S.vel[k]*dt;S.pos[k+1]+=S.vel[k+1]*dt;S.pos[k+2]+=S.vel[k+2]*dt;const u=S.life[i]/S.max[i];const c=(.16+u*.12)*(1-u*.5)*(fireLevel>.05?1:1.6);S.col[k]=c;S.col[k+1]=c;S.col[k+2]=c*1.05;}
-  S.p.geometry.attributes.position.needsUpdate=true;S.p.geometry.attributes.color.needsUpdate=true;
-}
-const G=9.8;const _v=new THREE.Vector3(),_o=new THREE.Vector3();
-function launchSpeed(d,th,dh){const c=Math.cos(th),den=2*c*c*(d*Math.tan(th)+dh);return Math.sqrt(G*d*d/Math.max(den,.1));}
-let jetRoof=0, jetBump=0; // 0..1 flow
-const jets=[{tip:roofTip,flow:()=>jetRoof,th:.3,d:66,h1:2.2,share:.62},{tip:bumpTip,flow:()=>jetBump,th:.17,d:30,h1:.2,share:.38}];
-let spawnAcc=0;
-function updWater(dt){
-  const W=WATER,Mi=MIST;
-  const total=jetRoof+jetBump; spawnAcc+=dt*1300*(total>0?1:0);
-  let toSpawn=spawnAcc|0; spawnAcc-=toSpawn;
-  const fwd=new THREE.Vector3(1,0,0);
-  for(let i=0;i<W.n;i++){const k=i*3;
-    if(W.pos[k+1]<-0.5||W.life[i]>6){ if(toSpawn>0&&total>0){toSpawn--; const j=Math.random()*total<jetRoof?jets[0]:jets[1]; j.tip.getWorldPosition(_o);
-        const th=j.th+(Math.random()-.5)*.035; const v=launchSpeed(j.d*(0.93+Math.random()*.1),th,_o.y-j.h1)*(j===jets[0]?Math.min(1,jetRoof*1.1):Math.min(1,jetBump*1.1));
-        const yaw=(Math.random()-.5)*.03; W.pos[k]=_o.x;W.pos[k+1]=_o.y;W.pos[k+2]=_o.z; W.vel[k]=v*Math.cos(th)*Math.cos(yaw);W.vel[k+1]=v*Math.sin(th);W.vel[k+2]=v*Math.cos(th)*Math.sin(yaw)+(j===jets[0]?.06:0);W.life[i]=0;
-      } else {W.pos[k+1]=-999;continue;} }
-    W.life[i]+=dt;W.vel[k+1]-=G*dt;W.vel[k]*=1-dt*.05;W.pos[k]+=W.vel[k]*dt;W.pos[k+1]+=W.vel[k+1]*dt;W.pos[k+2]+=W.vel[k+2]*dt;
-    const u=Math.min(1,W.life[i]/2.4);W.col[k]=.75+.2*(1-u);W.col[k+1]=.86+.1*(1-u);W.col[k+2]=1;
-    if(W.pos[k+1]<0.05){ // splash -> mist
-      const m=(Math.random()*Mi.n)|0;const mk=m*3;Mi.pos[mk]=W.pos[k];Mi.pos[mk+1]=.3;Mi.pos[mk+2]=W.pos[k+2];Mi.vel[mk]=(Math.random()-.5)*3;Mi.vel[mk+1]=1+Math.random()*2.5;Mi.vel[mk+2]=(Math.random()-.5)*3;Mi.life[m]=0;Mi.max[m]=.8+Math.random()*.8;W.pos[k+1]=-999;}
-  }
-  W.p.geometry.attributes.position.needsUpdate=true;W.p.geometry.attributes.color.needsUpdate=true;
-  for(let i=0;i<Mi.n;i++){const k=i*3;Mi.life[i]+=dt;if(Mi.life[i]>Mi.max[i]){Mi.pos[k+1]=-999;continue;}Mi.vel[k+1]-=dt*1.5;Mi.pos[k]+=Mi.vel[k]*dt;Mi.pos[k+1]+=Mi.vel[k+1]*dt;Mi.pos[k+2]+=Mi.vel[k+2]*dt;const f=1-Mi.life[i]/Mi.max[i];Mi.col[k]=.8*f;Mi.col[k+1]=.9*f;Mi.col[k+2]=f;}
-  Mi.p.geometry.attributes.position.needsUpdate=true;Mi.p.geometry.attributes.color.needsUpdate=true;
-}
+// videos
+stage.querySelectorAll('.vwrap').forEach(w => {
+  const v = w.querySelector('video');
+  w.addEventListener('click', e => {
+    e.stopPropagation();
+    if (v.paused) { v.play().then(() => w.classList.add('playing')).catch(() => { v.muted = true; v.play(); w.classList.add('playing'); }); }
+    else { v.pause(); w.classList.remove('playing'); }
+  });
+  v.addEventListener('ended', () => w.classList.remove('playing'));
+});
 
-/* ---------------- STATE / FLOW ---------------- */
-let cur=-1, T=0, phaseT=0;
-let prevSpeed=0, truckX=PH[0].x, fromX=truckX, toX=truckX, moveDur=0, moveT=0, moveEase='inout', speed=0, peakV=1, wheelRot=0;
-const camPos=new THREE.Vector3(), camLook=new THREE.Vector3(), wantPos=new THREE.Vector3(), wantLook=new THREE.Vector3();
-let yawOff=0,pitchOff=0,dragging=false,lastX=0,lastY=0,orbitAng=0;
-let lightsOn=false, jetsMode=false;
-const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-const easeOut=t=>1-Math.pow(1-t,2.2);
-const panel=$('#panel'), chips=$('#chips');
-PH.forEach((p,i)=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`<i>${i===0?'البداية':'المرحلة '+i}</i>${p.name}`;b.onclick=()=>go(i);chips.appendChild(b);});
-// hotspots
-const hot=$('#hot');
-const hsEls=PARTS.map((p,i)=>{const d=document.createElement('div');d.className='hs';d.innerHTML=`<span class="dot">${p.n}</span><span class="lab">${p.l}</span>`;hot.appendChild(d);return d;});
-let hlPart=-1;
+// keyboard + swipe
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','PageDown',' ','Enter'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(N-1);
+  else if (e.key === 'f' || e.key === 'F') document.getElementById('fsBtn').click();
+  else if (e.key === 'n' || e.key === 'N') document.getElementById('notesBtn').click();
+  else if (e.key === 'g' || e.key === 'G' || e.key === 'Escape') { if (e.key !== 'Escape' || grid.classList.contains('on')) document.getElementById('gridBtn').click(); }
+});
+let sx = null, sy = null;
+vp.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
+vp.addEventListener('touchend', e => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); }
+  sx = null;
+}, {passive:true});
 
-function go(i){
-  i=Math.max(0,Math.min(PH.length-1,i)); if(i===cur) return;
-  const P=PH[i], prev=cur; cur=i; phaseT=0;
-  // truck motion: only animate if going forward to next sequential phase; otherwise jump smoothly
-  fromX=truckX; toX=P.x;
-  if(prev>=0 && i===prev+1 && P.move>0){ moveDur=P.move; moveEase=P.ease||'inout'; }
-  else { moveDur=Math.abs(toX-fromX)>1?Math.min(2.2,.6+Math.abs(toX-fromX)/180):0; moveEase='inout'; if(!moveDur) truckX=toX; }
-  moveT=0; peakV=moveDur?Math.abs(toX-fromX)/moveDur*(moveEase==='out'?2.2:2):1;
-  yawOff=0;pitchOff=0;
-  // state
-  lightsOn=!!P.lights; jetsMode=P.jets||false;
-  if(i<4){fireLevel=1;smokeLevel=1;}
-  if(i>=6){fireLevel=0;smokeLevel=.15;}
-  if(i===5){fireLevel=Math.min(fireLevel,.25);}
-  // UI
-  $('#phaseNum').textContent=i===0?'نقطة البداية':'المرحلة '+i;
-  $('#phaseName').textContent=P.name;
-  [...chips.children].forEach((c,k)=>{c.classList.toggle('cur',k===i);c.classList.toggle('done',k<i);});
-  chips.children[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
-  panel.classList.remove('show');
-  clearTimeout(go._t); simTimers.length=0; panelShownAt=-1; if(REC) panel.style.opacity=0;
-  go._t=later(()=>{panel.innerHTML=P.html;panel.classList.toggle('wide',!!P.wide);panel.scrollTop=0;panel.classList.add('show');panelShownAt=T;bindPanel();},(P.alarm?2200:(P.wide?900:550))/1000);
-  hsEls.forEach(h=>h.classList.remove('on','hl'));hlPart=-1;
-  $('#hud').classList.toggle('on',!!P.hud);
-  if(P.alarm){alarmAt=T;$('#alarm').classList.remove('go');void $('#alarm').offsetWidth;$('#alarm').classList.add('go');$('#alarmMsg').classList.add('on');later(()=>$('#alarmMsg').classList.remove('on'),2.1);}
-  document.querySelectorAll('#panel video').forEach(v=>v.pause());
-  try{history.replaceState(null,'','#'+i);}catch(e){}
-  autoRestart();
-}
-function bindPanel(){
-  panel.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(+b.dataset.go));
-  panel.querySelectorAll('[data-zoom]').forEach(im=>im.onclick=()=>{$('#lb img').src=im.src;$('#lb').classList.add('on');});
-  panel.querySelectorAll('[data-part]').forEach(el=>{const f=()=>{hlPart=+el.dataset.part;hsEls.forEach((h,k)=>h.classList.toggle('hl',k===hlPart));};el.onmouseenter=f;el.onclick=f;});
-  panel.querySelectorAll('video').forEach(v=>v.addEventListener('play',()=>{stopAuto();panel.querySelectorAll('video').forEach(o=>{if(o!==v)o.pause();});}));
-}
-$('#lb').onclick=()=>$('#lb').classList.remove('on');
-$('#next').onclick=()=>go(cur+1); $('#prev').onclick=()=>go(cur-1);
-
-// autoplay
-let auto=false, autoTimer=null;
-function autoRestart(){clearTimeout(autoTimer);if(!auto)return;const P=PH[cur];if(cur>=PH.length-1){return;}const dwell=(cur===0?5:cur===6?16:11)+(P.move||0)+(P.alarm?2:0);autoTimer=setTimeout(()=>go(cur+1),dwell*1000);}
-function stopAuto(){auto=false;$('#auto').classList.remove('on');clearTimeout(autoTimer);}
-$('#auto').onclick=()=>{auto=!auto;$('#auto').classList.toggle('on',auto);if(auto){if(cur>=PH.length-1)go(0);else autoRestart();}else clearTimeout(autoTimer);};
-
-// input
-const cv=$('#c');
-cv.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;cv.setPointerCapture(e.pointerId);hideHint();});
-cv.addEventListener('pointermove',e=>{if(!dragging)return;yawOff-=(e.clientX-lastX)*.006;pitchOff=Math.max(-.35,Math.min(.6,pitchOff+(e.clientY-lastY)*.003));lastX=e.clientX;lastY=e.clientY;});
-const endDrag=()=>{dragging=false;};cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
-cv.addEventListener('wheel',e=>{zoom=Math.max(.6,Math.min(1.8,zoom*(1+e.deltaY*.001)));e.preventDefault();},{passive:false});
-let zoom=1;
-document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key===' '||e.key==='PageDown'||e.key==='Enter'){e.preventDefault();go(cur+1);}else if(e.key==='ArrowRight'||e.key==='PageUp'){e.preventDefault();go(cur-1);}else if(e.key==='Escape')$('#lb').classList.remove('on');});
-function hideHint(){$('#hint').style.opacity=0;}
-setTimeout(hideHint,9000);
-
-/* gauge */
-const gctx=$('#gauge').getContext('2d');
-function drawGauge(kmh){const g=gctx,W=300,cx=150,cy=160,r=118;g.clearRect(0,0,W,W);g.lineCap='round';
-  g.lineWidth=18;g.strokeStyle='rgba(255,255,255,.1)';g.beginPath();g.arc(cx,cy,r,Math.PI*.8,Math.PI*2.2);g.stroke();
-  const f=Math.min(1,kmh/130);const grad=g.createLinearGradient(0,0,W,0);grad.addColorStop(0,'#2FBF8F');grad.addColorStop(1,'#E5262F');
-  g.strokeStyle=grad;g.beginPath();g.arc(cx,cy,r,Math.PI*.8,Math.PI*.8+Math.PI*1.4*f);g.stroke();
-  g.fillStyle='rgba(8,10,13,.75)';g.beginPath();g.arc(cx,cy,r-20,0,Math.PI*2);g.fill();
-  g.fillStyle='#F3EFE9';g.font='900 78px Cairo, Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(Math.round(kmh),cx,cy-6);
-  g.fillStyle='#AEB6BE';g.font='700 24px "IBM Plex Sans Arabic", Arial';g.fillText('km/h',cx,cy+48);}
-
-/* resize */
-function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;
-  const narrow=w<760; camera.fov=narrow?(w<h?62:48):42; camera.updateProjectionMatrix(); camShift=narrow?0:(w>1100?.14:.1); baseZoom=(w<h)?1.75:(narrow?1.2:1);}
-let camShift=.2, baseZoom=1; addEventListener('resize',resize); resize();
-
-/* loop */
-const clock=new THREE.Clock(); const _p=new THREE.Vector3(); const _q=new THREE.Vector3();
-let firstFrame=true;
-function frame(fixed){
-  const dt=fixed?fixed:Math.min(clock.getDelta(),.05); T+=dt; phaseT+=dt;
-  if(REC){ for(let i=simTimers.length-1;i>=0;i--) if(T>=simTimers[i].t){const f=simTimers[i].fn;simTimers.splice(i,1);f();}
-    panel.style.opacity=panelShownAt<0?0:Math.min(1,(T-panelShownAt)/.5);
-    const a=T-alarmAt; $('#alarm').style.opacity=a<3?Math.max(0,Math.sin(a*Math.PI)):0;
-    hsEls.forEach(h=>{if(h.classList.contains('on'))h.style.opacity=1;else h.style.opacity=0;}); }
-  // truck motion
-  if(moveDur>0 && moveT<moveDur){ moveT=Math.min(moveDur,moveT+dt); const u=moveT/moveDur; const e=moveEase==='out'?easeOut(u):easeIO(u); const nx=fromX+(toX-fromX)*e; speed=(nx-truckX)/dt; truckX=nx; }
-  else { speed*=.85; if(Math.abs(speed)<.01) speed=0; }
-  truck.position.set(truckX,0,0);
-  wheelRot-=speed*dt/.74; wheels.forEach(w=>w.rotation.z=wheelRot);
-  const acc=(speed-prevSpeed)/Math.max(dt,1e-3); prevSpeed=speed;
-  body.position.y=Math.abs(speed)>1?Math.sin(T*14)*.012+.01:0;
-  body.rotation.z=THREE.MathUtils.lerp(body.rotation.z,THREE.MathUtils.clamp(acc*.0016,-.025,.025),.08);
-  // beacons
-  const fl=lightsOn?((Math.sin(T*18)>0)?1:0):0, fr=lightsOn?((Math.sin(T*18+Math.PI)>0)?1:0):0;
-  lbBlue[0].material.emissiveIntensity=fl*4;lbBlue[1].material.emissiveIntensity=fr*4;lbCenter.material.emissiveIntensity=lightsOn?(Math.sin(T*9)>0?3:0):0;
-  beaconL.intensity=fl*3.5;beaconR.intensity=fr*3.5;
-  // jets
-  const wantRoof=(jetsMode===true)?1:0, wantBump=(jetsMode===true)?1:0;
-  if(jetsMode==='fade'){jetRoof=Math.max(0,jetRoof-dt*.12);jetBump=Math.max(0,jetBump-dt*.2);}
-  else {jetRoof+=(wantRoof-jetRoof)*Math.min(1,dt*(wantRoof?1.2:3));jetBump+=(wantBump-jetBump)*Math.min(1,dt*(wantBump?1.6:3));}
-  if(jetsMode===true && phaseT>1.2) pitch.rotation.z+=(0.3-pitch.rotation.z)*dt*1.5; else if(cur<4) pitch.rotation.z+=(0.05-pitch.rotation.z)*dt*2;
-  if(jetsMode===true && phaseT>1.5){fireLevel=Math.max(.22,fireLevel-dt*.07);}
-  if(cur===5){fireLevel=Math.max(0,fireLevel-dt*.1);smokeLevel=Math.max(.35,smokeLevel-dt*.03);}
-  fireLight.intensity=(2.2+Math.sin(T*13)*.4+Math.sin(T*7.3)*.3)*fireLevel*2.2;
-  updFire(dt); updWater(dt);
-  // camera target
-  const P=PH[cur]; const c=P.cam;
-  if(P.orbit) orbitAng+=dt*P.orbit; else orbitAng*=.96;
-  const yaw=yawOff+orbitAng;
-  _p.set(c.o[0],c.o[1],c.o[2]); const cy=Math.cos(yaw),sy=Math.sin(yaw); const ox=_p.x*cy-_p.z*sy, oz=_p.x*sy+_p.z*cy; _p.set(ox,_p.y*(1+pitchOff*1.5)+pitchOff*6,oz).multiplyScalar(zoom*baseZoom);
-  wantLook.set(c.l[0],c.l[1],c.l[2]);
-  wantPos.copy(_p); wantPos.y=Math.max(.6,wantPos.y);
-  if(firstFrame){camPos.copy(wantPos);camLook.copy(wantLook);firstFrame=false;}
-  const k=1-Math.exp(-dt*1.6);
-  camPos.lerp(wantPos,k); camLook.lerp(wantLook,k);
-  camera.position.set(truckX+camPos.x,Math.max(.6,camPos.y),camPos.z); camera.lookAt(truckX+camLook.x,camLook.y,camLook.z);
-  // shift view so subject sits left of the RTL panel on wide screens
-  const narrowV=innerWidth<760; camera.setViewOffset(innerWidth,innerHeight,(!narrowV&&panel.classList.contains('show')&&!P.wide?innerWidth*camShift:0),(narrowV&&panel.classList.contains('show')?innerHeight*.2:0),innerWidth,innerHeight);
-  // shadow follows
-  moon.position.set(truckX+30,55,26); moon.target.position.set(truckX+6,0,0);
-  // hotspots
-  if(P.hot && moveT>=moveDur && phaseT>1.2){ hsEls.forEach((h,k)=>{ _p.set(...PARTS[k].p); truck.localToWorld(_p); _p.project(camera); const vis=_p.z<1; h.style.left=((_p.x+1)/2*innerWidth)+'px'; h.style.top=((1-_p.y)/2*innerHeight)+'px'; if(vis&&phaseT>1.2+k*.25)h.classList.add('on'); }); }
-  // HUD
-  if(P.hud){ const kmh=Math.min(115,Math.abs(speed)/peakV*115*1.04); drawGauge(kmh); }
-  renderer.render(scene,camera);
-  if(firstFrame===false && $('#load').style.opacity!=='0'){ $('#load').style.opacity=0; setTimeout(()=>$('#load').style.display='none',800); }
-  if(!REC) requestAnimationFrame(()=>frame());
-}
-window.__go=go; window.__step=(n,d)=>{for(let i=0;i<n;i++)frame(d||1/24);};
-const start=parseInt((location.hash||'').slice(1));
-go(isNaN(start)?0:start);
-// warm-start camera when deep-linking
-truckX=PH[cur].x; moveDur=0;
-if(REC){ $('#load').style.display='none'; frame(1/24); } else requestAnimationFrame(()=>frame());
-})();
+const start = parseInt((location.hash || '').slice(1)) || 1;
+fit(); go(start - 1);
 </script>
 </body>
 </html>
