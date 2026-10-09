@@ -33,6 +33,7 @@ function buildPanther(THREE, opts) {
     tail: new THREE.MeshStandardMaterial({ color: 0x500000, emissive: 0xff1a1a, emissiveIntensity: 1.3, roughness: .3, name: 'tail' }),
     reflR: new THREE.MeshStandardMaterial({ color: 0xc00010, emissive: 0x400004, roughness: .25, metalness: .3, name: 'reflective_red' }),
     blue: new THREE.MeshStandardMaterial({ color: 0x0b2c8f, emissive: 0x2a6bff, emissiveIntensity: 0, roughness: .15, transparent: true, opacity: .95, name: 'beacon_blue' }),
+    cabGlass: new Phys(Object.assign({ color: 0x020304, roughness: .1, metalness: .25, envMapIntensity: .45, name: 'cab_glass_body' }, LITE ? {} : { clearcoat: 1, clearcoatRoughness: 0 })),
     interior: new THREE.MeshStandardMaterial({ color: 0x23262b, roughness: .9, name: 'interior' }),
     seat: new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: .8, name: 'seat' }),
     orange: new THREE.MeshStandardMaterial({ color: 0xe0661a, roughness: .5, name: 'grab_orange' })
@@ -100,7 +101,7 @@ function buildPanther(THREE, opts) {
     for (const x of [-1.85, -3.4]) box(.012, 2.0, .01, M.satin, x, 2.15, s * (HW + .012));
     box(XCAB - XR - .4, .05, .01, M.reflR, (XCAB + XR) / 2 + .1, 1.2, s * (HW + .02));
     box(XCAB - XR - .4, .03, .01, M.white, (XCAB + XR) / 2 + .1, 1.42, s * (HW + .02));
-    decal(wordTex('rosenbauer', s < 0, { font: 'bold 118px Arial, sans-serif' }), 1.7, .32, -4.1, 1.3, s * (HW + .03), s < 0 ? Math.PI : 0);
+    decal(wordTex('rosenbauer', false, { font: 'bold 118px Arial, sans-serif' }), 1.7, .32, -4.1, 1.3, s * (HW + .03), s < 0 ? Math.PI : 0);
     for (const x of [-5.2, -2.6, .2]) rbox(.12, .06, .04, .02, M.amber, x, 1.12, s * (HW + .02));
     for (const x of [-5.3, 1.6]) { rbox(.42, .12, .06, .03, M.satin, x, 3.27, s * (HW + .02)); box(.36, .07, .02, M.led, x, 3.27, s * (HW + .055)); }
     const fender = add(sideExtrude([[-4.95, 1.02], [-1.55, 1.02], [-1.6, 1.5, -1.95, 1.62], [-4.6, 1.62], [-4.95, 1.5, -4.95, 1.02]], .14, M.satin, .03));
@@ -122,16 +123,29 @@ function buildPanther(THREE, opts) {
   const cabG = new THREE.Group(); cabG.name = 'cab'; body.add(cabG);
   add(sideExtrude([[XCAB, .68], [5.55, .68], [5.88, .9], [5.86, 1.18], [5.6, 1.3], [XCAB, 1.3]], CW, M.black, .14, 6), cabG);
   const WS0 = [5.64, 1.27], WS1 = [4.5, 3.18];
-  const green = add(sideExtrude([[XCAB + .02, 1.22], WS0, [4.98, 2.25, WS1[0], WS1[1]], [4.4, 3.36, 4.0, 3.38], [XCAB + .02, 3.38]], CW - .04, M.glass, .24, 10), cabG);
+  const green = add(sideExtrude([[XCAB + .02, 1.22], WS0, [4.98, 2.25, WS1[0], WS1[1]], [4.4, 3.36, 4.0, 3.38], [XCAB + .02, 3.38]], CW - .04, M.cabGlass, .24, 10), cabG);
   green.name = 'cab_glass';
   add(sideExtrude([[XCAB, 3.2], [4.32, 3.2], [4.6, 3.28, 4.48, 3.4], [XCAB, 3.42]], CW + .02, M.black, .1, 6), cabG);
   const aPath = new THREE.QuadraticBezierCurve3(new THREE.Vector3(WS0[0] + .04, WS0[1], 0), new THREE.Vector3(5.04, 2.25, 0), new THREE.Vector3(WS1[0] - .02, WS1[1] + .05, 0));
+  // panoramic windscreen: lofted glass sheet wrapping both front corners
+  (function () {
+    const rows = 14, hw = CHW + .005, rc = .34, wrap = .5, arcN = 10, off = .03;
+    const outline = []; // [dx, z] relative to the screen front line
+    outline.push([-wrap, -hw]);
+    for (let i = 0; i <= arcN; i++) { const a = -Math.PI / 2 + i / arcN * Math.PI / 2; outline.push([-rc + Math.cos(a) * rc, -hw + rc + Math.sin(a) * rc]); }
+    for (let i = 0; i <= arcN; i++) { const a = i / arcN * Math.PI / 2; outline.push([-rc + Math.cos(a) * rc, hw - rc + Math.sin(a) * rc]); }
+    outline.push([-wrap, hw]);
+    const pos = [], uv = [], idx = [], cols = outline.length;
+    for (let r = 0; r <= rows; r++) { const pt = aPath.getPoint(r / rows); const shrink = 1 - .06 * (r / rows);
+      for (let c = 0; c < cols; c++) { const [dx, z] = outline[c]; pos.push(pt.x + off + dx * (1 - .25 * r / rows), pt.y + .01, z * shrink); uv.push(c / (cols - 1), r / rows); } }
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols - 1; c++) { const a = r * cols + c, b = a + 1, d = a + cols, e = d + 1; idx.push(a, d, b, b, d, e); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+    const ws = new THREE.Mesh(g, new Phys(Object.assign({ color: 0x0b1118, roughness: .05, metalness: .1, transparent: true, opacity: .5, envMapIntensity: .3, side: THREE.DoubleSide, depthWrite: false, name: 'windscreen' }, LITE ? {} : { clearcoat: .25, clearcoatRoughness: .05 }))); ws.name = 'windscreen'; ws.renderOrder = 2; cabG.add(ws);
+  })();
   for (const s of [-1, 1]) {
     const zc = s * (CHW - .2);
-    const path = new THREE.CatmullRomCurve3(aPath.getPoints(12).map(p => new THREE.Vector3(p.x + .06, p.y, zc)));
-    add(new THREE.Mesh(new THREE.TubeGeometry(path, 24, .085, 10, false), M.black), cabG);
-    const sidePath = new THREE.CatmullRomCurve3(aPath.getPoints(12).map(p => new THREE.Vector3(p.x - .1, p.y, s * (CHW + .015))));
-    add(new THREE.Mesh(new THREE.TubeGeometry(sidePath, 24, .06, 8, false), M.black), cabG);
+    const sidePath = new THREE.CatmullRomCurve3(aPath.getPoints(12).map(p => new THREE.Vector3(p.x - .52, p.y + .02, s * (CHW + .02))));
+    add(new THREE.Mesh(new THREE.TubeGeometry(sidePath, 24, .075, 10, false), M.black), cabG);
     rbox(.12, 2.15, .08, .04, M.black, 3.5, 2.28, s * (CHW + .005), cabG);
     rbox(.14, 2.15, .08, .04, M.black, XCAB + .12, 2.28, s * (CHW + .005), cabG);
     rbox(3.4, .09, .08, .04, M.black, 3.75, 1.62, s * (CHW + .005), cabG);
@@ -140,8 +154,8 @@ function buildPanther(THREE, opts) {
     const arm1 = add(sideExtrude([[3.66, .72], [4.85, .72], [4.85, 1.0], [4.55, 1.58], [3.66, 1.58]], .1, M.red, .035, 4), cabG); arm1.position.z = s * (CHW + .03);
     const arm2 = add(sideExtrude([[XCAB + .06, .72], [3.48, .72], [3.48, 1.56], [2.75, 1.56], [XCAB + .06, 1.15]], .1, M.red, .035, 4), cabG); arm2.position.z = s * (CHW + .03);
     rbox(.17, .32, .05, .03, M.satin, 4.2, 1.22, s * (CHW + .085), cabG); rbox(.09, .2, .03, .015, M.satin, 4.2, 1.22, s * (CHW + .11), cabG);
-    decal(wordTex('PANTHER', s < 0, { bar: true }), 1.3, .25, 4.35, 1.82, s * (CHW + .045), s < 0 ? Math.PI : 0, cabG);
-    decal(wordTex('R', s < 0, { font: 'bold 170px Arial', w: 192, h: 192 }), .2, .2, 2.32, 2.9, s * (CHW + .045), s < 0 ? Math.PI : 0, cabG);
+    decal(wordTex('PANTHER', false, { bar: true }), 1.3, .25, 4.35, 1.82, s * (CHW + .045), s < 0 ? Math.PI : 0, cabG);
+    decal(wordTex('R', false, { font: 'bold 170px Arial', w: 192, h: 192 }), .2, .2, 2.32, 2.9, s * (CHW + .045), s < 0 ? Math.PI : 0, cabG);
     rbox(.85, .05, .34, .02, M.alu, 4.2, .42, s * (CHW - .05), cabG); rbox(.85, .05, .3, .02, M.alu, 4.2, .7, s * (CHW - .02), cabG);
     rod(new THREE.Vector3(3.7, 1.5, s * (CHW - .18)), new THREE.Vector3(3.7, 2.8, s * (CHW - .18)), .022, M.orange, cabG);
     rbox(.14, .07, .04, .02, M.amber, 5.2, 1.12, s * (CHW + .03), cabG);
@@ -172,28 +186,47 @@ function buildPanther(THREE, opts) {
     rbox(.12, .16, .56, .06, M.black, 0, 0, 0, wd); box(.02, .12, .5, M.lens, -.06, 0, 0, wd);
   }
 
-  /* ---------------- front module ---------------- */
+  /* ---------------- front module (v3, from field photos) ---------------- */
   const fr = new THREE.Group(); fr.name = 'front'; body.add(fr);
-  add(sideExtrude([[5.6, .4], [6.04, .4], [6.12, .55], [6.12, .98], [5.86, 1.1], [5.6, 1.1]], 2.05, M.black, .08, 6), fr);
+  // black cowl under the windscreen (carries wipers + logo)
+  add(sideExtrude([[5.3, .98], [6.0, .98], [6.03, 1.2], [5.78, 1.38], [5.3, 1.38]], CW - .06, M.black, .06, 6), fr);
+  // white R + rosenbauer logo on the cowl (viewer's right = -z)
+  decal(wordTex('rosenbauer', false, { font: 'bold 120px Arial, sans-serif' }), .62, .12, 6.04, 1.1, -.72, Math.PI / 2, fr);
+  decal(wordTex('R', false, { font: 'bold 170px Arial', w: 192, h: 192 }), .14, .14, 6.04, 1.1, -.31, Math.PI / 2, fr);
+  // parked wipers along the screen base
+  for (const z of [-.62, .55]) { const w = rbox(.05, .035, 1.05, .015, M.satin, 5.72, 1.42, z, fr); w.rotation.x = .04; cyl(.03, .03, .06, M.satin, 5.75, 1.39, z + .48, null, fr, 10); }
+  // red horizontal band across the front (between the corner units)
+  add(sideExtrude([[5.42, .76], [6.1, .76], [6.13, .98], [5.42, .98]], 1.95, M.red, .05, 4), fr);
+  rbox(.04, .03, 1.5, .01, M.satin, 6.14, .87, 0, fr); // band shut-line
+  // lower bumper (black) with grille slots, tow eyes, under-run guard
+  add(sideExtrude([[5.45, .36], [6.02, .36], [6.12, .48], [6.12, .76], [5.45, .76]], 2.25, M.black, .07, 5), fr);
+  for (let i = 0; i < 4; i++) rbox(.03, .03, 1.1, .012, M.matte, 6.13, .48 + i * .07, 0, fr);
+  for (const s of [-1, 1]) { const t2 = mesh(new THREE.TorusGeometry(.07, .024, 10, 20), M.red, 6.13, .44, s * .62, fr); t2.rotation.y = Math.PI / 2; }
+  rbox(.12, .18, 2.3, .04, M.satin, 5.74, .28, 0, fr);
+  // corner wedge units: black housing angled ~43°, chevron panel, sloping LED strip, round lamp, red cap
   for (const s of [-1, 1]) {
-    const pod = new THREE.Group(); pod.position.set(5.98, .78, s * 1.22); pod.rotation.y = -s * .62; fr.add(pod);
-    rbox(.22, .88, .84, .08, M.black, 0, 0, 0, pod);
-    const cp = new THREE.Mesh(new THREE.PlaneGeometry(.74, .62), new THREE.MeshStandardMaterial({ map: chevTex, roughness: .3, metalness: .1, polygonOffset: true, polygonOffsetFactor: -2 })); cp.position.set(.19, -.05, 0); cp.rotation.y = Math.PI / 2; if (s < 0) cp.scale.x = -1; pod.add(cp);
-    rbox(.12, .2, .74, .06, M.satin, .06, .4, 0, pod);
-    for (let k = -1; k <= 1; k++) { cyl(.055, .055, .03, M.lens, .13, .4, k * .2, 'x', pod, 18); cyl(.03, .03, .035, M.led, .135, .4, k * .2, 'x', pod, 12); }
-    box(.03, .03, .66, M.led, .13, .29, 0, pod);
-    rbox(.6, .2, .5, .06, M.red, -.14, .6, s * .02, pod);
-    parts['head' + s] = pod;
+    const cu = new THREE.Group(); cu.position.set(5.93, .58, s * 1.12); cu.rotation.y = -s * .75; fr.add(cu);
+    const hs = sideExtrude([[-.4, -.24], [.04, -.24], [.13, -.14], [.13, .6], [.0, .74], [-.4, .74]], .8, M.black, .05, 5); add(hs, cu);
+    const ch = new THREE.Mesh(new THREE.PlaneGeometry(.66, .54), new THREE.MeshStandardMaterial({ map: chevTex, roughness: .32, metalness: .1, polygonOffset: true, polygonOffsetFactor: -3 }));
+    ch.position.set(.2, .26, 0); ch.rotation.y = Math.PI / 2; if (s < 0) ch.scale.x = -1; cu.add(ch);
+    // recessed frame around chevron
+    rbox(.03, .04, .72, .015, M.satin, .19, .55, 0, cu); rbox(.03, .04, .72, .015, M.satin, .19, -.03, 0, cu);
+    // sloping LED strip along the top edge
+    const led = new THREE.Group(); led.position.set(.17, .66, 0); led.rotation.x = s * .16; cu.add(led);
+    rbox(.06, .07, .74, .03, M.satin, 0, 0, 0, led); box(.02, .035, .68, M.led, .03, 0, 0, led);
+    // round lamp below the chevrons
+    cyl(.075, .075, .05, M.satin, .18, -.14, s * .22, 'x', cu, 24); cyl(.058, .058, .055, M.lens, .19, -.14, s * .22, 'x', cu, 24); cyl(.03, .03, .06, M.led, .195, -.14, s * .22, 'x', cu, 16);
+    // red angular cap on top (meets the windscreen corner)
+    const cap = sideExtrude([[-.5, 0], [.08, 0], [.0, .2], [-.5, .24]], .62, M.red, .04, 4); cap.position.set(-.05, .76, 0); add(cap, cu);
+    parts['head' + s] = cu;
   }
-  box(.03, .035, 1.1, M.led, 6.13, .95, 0, fr);
-  for (let i = 0; i < 5; i++) rbox(.03, .03, 1.0, .01, M.satin, 6.13, .55 + i * .065, 0, fr);
-  decal(wordTex('rosenbauer', false, { font: 'bold 118px Arial, sans-serif' }), .62, .12, 6.14, 1.03, .62, Math.PI / 2, fr);
-  for (const s of [-1, 1]) { const t = mesh(new THREE.TorusGeometry(.07, .024, 10, 20), M.red, 6.14, .5, s * .55, fr); t.rotation.y = Math.PI / 2; }
-  const bt = new THREE.Group(); bt.name = 'bumper_turret'; bt.position.set(6.15, .78, .3); fr.add(bt);
-  mesh(new THREE.SphereGeometry(.17, 24, 16), M.red, 0, 0, 0, bt); cyl(.12, .14, .08, M.satin, -.02, -.15, 0, null, bt);
-  cyl(.055, .09, .46, M.black, .25, 0, 0, 'x', bt); cyl(.07, .07, .06, M.alu, .47, 0, 0, 'x', bt);
-  const bumpTip = new THREE.Object3D(); bumpTip.position.x = .52; bt.add(bumpTip);
-  rbox(.12, .2, 2.4, .04, M.satin, 5.72, .3, 0, fr);
+  // bumper turret: red body + black nozzle, on top of the red band
+  const bt = new THREE.Group(); bt.name = 'bumper_turret'; bt.position.set(6.12, 1.08, .3); fr.add(bt);
+  cyl(.12, .14, .1, M.satin, -.03, -.08, 0, null, bt, 20);
+  mesh(new THREE.SphereGeometry(.16, 24, 16), M.red, 0, .02, 0, bt);
+  rbox(.18, .2, .2, .06, M.red, -.08, .02, 0, bt);
+  cyl(.05, .085, .44, M.black, .24, .02, 0, 'x', bt); cyl(.065, .065, .05, M.alu, .45, .02, 0, 'x', bt);
+  const bumpTip = new THREE.Object3D(); bumpTip.position.set(.5, .02, 0); bt.add(bumpTip);
 
   /* ---------------- roof turret ---------------- */
   const turret = new THREE.Group(); turret.name = 'roof_turret'; turret.position.set(4.05, 3.42, 0); cabG.add(turret);
