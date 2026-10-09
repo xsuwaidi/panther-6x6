@@ -21,7 +21,7 @@ function buildPanther(THREE, opts) {
     black: paint(0x07080a, { roughness: .25, metalness: .35, name: 'gloss_black' }),
     satin: new THREE.MeshStandardMaterial({ color: 0x121316, roughness: .55, metalness: .3, name: 'satin_black' }),
     matte: new THREE.MeshStandardMaterial({ color: 0x0f1012, roughness: .85, metalness: .1, name: 'matte_black' }),
-    glass: new Phys(Object.assign({ color: 0x0a1016, roughness: .04, metalness: .15, transparent: true, opacity: .9, envMapIntensity: 2.4, side: THREE.DoubleSide, name: 'smoked_glass' }, LITE ? {} : { clearcoat: 1, clearcoatRoughness: 0 })),
+    glass: new Phys(Object.assign({ color: 0x05080b, roughness: .08, metalness: .05, transparent: true, opacity: .93, envMapIntensity: .9, side: THREE.DoubleSide, name: 'smoked_glass' }, LITE ? {} : { clearcoat: 1, clearcoatRoughness: 0 })),
     alu: new THREE.MeshStandardMaterial({ color: 0xb4bac1, roughness: .28, metalness: .95, name: 'aluminium' }),
     tread: new THREE.MeshStandardMaterial({ color: 0x1b1b1c, roughness: .9, metalness: 0, name: 'tread' }),
     rubber: new THREE.MeshStandardMaterial({ color: 0x18181a, roughness: .78, metalness: 0, name: 'rubber' }),
@@ -108,15 +108,15 @@ function buildPanther(THREE, opts) {
     box(.03, .45, .55, M.rubber, -5.2, .62, s * 1.18);
     box(.03, .45, .55, M.rubber, 2.55, .62, s * 1.18);
   }
-  for (let y = .95; y < 3.3; y += .3) rod(new THREE.Vector3(XR - .08, y, .62), new THREE.Vector3(XR - .08, y, 1.12), .02, M.alu);
-  for (const z of [.62, 1.12]) rod(new THREE.Vector3(XR - .08, .85, z), new THREE.Vector3(XR - .08, 3.65, z), .025, M.alu);
+  for (let y = .95; y < 3.3; y += .3) rod(new THREE.Vector3(XR - .2, y, .62), new THREE.Vector3(XR - .2, y, 1.12), .02, M.alu);
+  for (const z of [.62, 1.12]) rod(new THREE.Vector3(XR - .2, .85, z), new THREE.Vector3(XR - .2, 3.65, z), .025, M.alu);
   for (const s of [-1, 1]) {
-    rbox(.08, .62, .3, .05, M.satin, XR - .03, 1.3, s * 1.1); box(.02, .2, .22, M.tail, XR - .08, 1.18, s * 1.1); box(.02, .12, .22, M.amber, XR - .08, 1.4, s * 1.1); box(.02, .1, .22, M.led, XR - .08, 1.53, s * 1.1);
-    rbox(.08, .1, .55, .04, M.amber, XR - .02, 3.32, s * .85);
+    rbox(.08, .62, .3, .05, M.satin, XR - .17, 1.3, s * 1.1); box(.02, .2, .22, M.tail, XR - .235, 1.18, s * 1.1); box(.02, .12, .22, M.amber, XR - .235, 1.4, s * 1.1); box(.02, .1, .22, M.led, XR - .235, 1.53, s * 1.1);
+    rbox(.08, .1, .55, .04, M.amber, XR - .16, 3.32, s * .85);
   }
-  rbox(.28, .3, W, .06, M.satin, XR - .06, .82, 0);
-  for (let i = -3; i <= 3; i++) box(.02, .05, .3, M.reflR, XR - .21, .82, i * .4);
-  rbox(.1, .08, .14, .03, M.satin, XR - .03, 3.15, 0);
+  rbox(.28, .3, W, .06, M.satin, XR - .12, .82, 0);
+  for (let i = -3; i <= 3; i++) box(.02, .05, .3, M.reflR, XR - .3, .82, i * .4);
+  rbox(.1, .08, .14, .03, M.satin, XR - .17, 3.15, 0);
 
   /* ---------------- cab ---------------- */
   const cabG = new THREE.Group(); cabG.name = 'cab'; body.add(cabG);
@@ -143,7 +143,7 @@ function buildPanther(THREE, opts) {
     decal(wordTex('PANTHER', s < 0, { bar: true }), 1.3, .25, 4.35, 1.82, s * (CHW + .045), s < 0 ? Math.PI : 0, cabG);
     decal(wordTex('R', s < 0, { font: 'bold 170px Arial', w: 192, h: 192 }), .2, .2, 2.32, 2.9, s * (CHW + .045), s < 0 ? Math.PI : 0, cabG);
     rbox(.85, .05, .34, .02, M.alu, 4.2, .42, s * (CHW - .05), cabG); rbox(.85, .05, .3, .02, M.alu, 4.2, .7, s * (CHW - .02), cabG);
-    rod(new THREE.Vector3(3.56, 1.3, s * (CHW + .08)), new THREE.Vector3(3.56, 2.9, s * (CHW + .08)), .022, M.orange, cabG);
+    rod(new THREE.Vector3(3.7, 1.5, s * (CHW - .18)), new THREE.Vector3(3.7, 2.8, s * (CHW - .18)), .022, M.orange, cabG);
     rbox(.14, .07, .04, .02, M.amber, 5.2, 1.12, s * (CHW + .03), cabG);
   }
   for (const z of [-.7, .7]) { rbox(.55, .95, .55, .12, M.seat, 3.95, 1.85, z, cabG); rbox(.15, .7, .55, .07, M.seat, 3.65, 2.5, z, cabG); }
