@@ -79,6 +79,36 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 #gauge{width:150px;height:150px}
 #hudTxt{font:700 13px 'IBM Plex Sans Arabic';color:var(--muted);direction:rtl;line-height:1.6}
 #hudTxt b{color:var(--ink);font-size:15px}
+/* ops board + radio */
+#left{position:fixed;top:46px;left:18px;width:272px;z-index:5;display:flex;flex-direction:column;gap:8px;pointer-events:none;opacity:0;transition:opacity .6s}
+#left.on{opacity:1}
+#ops{background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px;color:var(--muted)}
+.or{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 6px}
+#clk{font:900 26px/1 'Cairo';color:var(--ink);direction:ltr;letter-spacing:1px}
+.trk{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin:2px 0 5px;direction:ltr}
+.trk i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--orange))}
+.trk em{position:absolute;top:-4px;width:3px;height:14px;background:#fff;border-radius:2px;display:none}
+.trk u{position:absolute;right:0;top:-4px;width:2px;height:14px;background:var(--red)}
+#respTxt{font-size:11.5px;line-height:1.5;display:block;margin:0 0 8px}
+#respTxt.ok{color:#8fe3c2}
+.tk{display:grid;grid-template-columns:52px 1fr 64px;align-items:center;gap:8px;margin:0 0 5px}
+.tk .nm{font-weight:700;color:var(--ink);font-size:12px}
+.tk .bars{display:flex;flex-direction:column;gap:3px;direction:ltr}
+.tk .b{height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}
+.tk .b i{display:block;height:100%;width:100%;background:#3d8bff;transition:width .2s}
+.tk .b.f i{background:#f1f1e6}
+.tk .v{font:700 11.5px 'IBM Plex Sans Arabic';color:var(--ink);text-align:left;direction:ltr}
+.tk.dry .v{color:var(--red)}
+.tk.hide{display:none}
+#flowV,#windV{color:var(--ink);font-weight:700;direction:ltr}
+#windV svg{width:14px;height:14px;vertical-align:-2px;margin-left:4px}
+.legend2{font-size:10.5px;margin:-2px 0 6px;display:flex;gap:10px}
+.legend2 i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-left:4px;vertical-align:0}
+#radio{display:flex;flex-direction:column;gap:5px}
+.rm{background:rgba(8,10,13,.78);border:1px solid var(--line);border-right:3px solid var(--teal);border-radius:8px;padding:6px 10px;font-size:12.5px;line-height:1.55;color:#D4D9DE;animation:rise .4s forwards;opacity:0}
+.rm b{display:block;font:700 11px 'IBM Plex Sans Arabic';color:var(--teal);letter-spacing:.3px}
+.rm.old{opacity:.7!important}.rm.old b{color:var(--muted)}
+body.rec .rm{opacity:1}
 /* alarm */
 #alarm{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(229,38,47,0) 40%,rgba(229,38,47,.55) 100%)}
 #alarm.go{animation:alarm 1s 3}
@@ -120,6 +150,7 @@ body.rec #panel{backdrop-filter:none!important;-webkit-backdrop-filter:none!impo
   .ttl{font-size:23px}.sub{font-size:14.5px}.stat b{font-size:22px}.big{font-size:34px}
   #phaseName{font-size:16px}#brand{font-size:10px;letter-spacing:2px}
   #hud{bottom:auto;top:64px;left:10px}#gauge{width:96px;height:96px}#hudTxt{display:none}
+  #left{top:auto;bottom:calc(46% + 84px);left:10px;width:176px}#radio,.legend2,#windRow,#flowRow,#respTxt{display:none}.trk{margin-bottom:8px}#ops{padding:8px 10px}#clk{font-size:20px}.tk{grid-template-columns:44px 1fr 54px}
   .gal{grid-template-columns:repeat(2,1fr)}
   .chip{min-width:84px;font-size:11.5px}
   #nav .lbl{display:none}
@@ -137,6 +168,18 @@ body.rec #panel{backdrop-filter:none!important;-webkit-backdrop-filter:none!impo
 </div>
 <div id="hot"></div>
 <div id="hud"><canvas id="gauge" width="300" height="300"></canvas><div id="hudTxt">السرعة الحالية<br><b>نظام دفع 6×6</b><br>ناقل حركة أوتوماتيك</div></div>
+<div id="left">
+  <div id="ops">
+    <div class="or"><span>زمن المهمة منذ البلاغ</span><b id="clk">00:00</b></div>
+    <div class="trk"><i id="respFill"></i><em id="respMark"></em><u></u></div>
+    <span id="respTxt">معيار ICAO: الوصول إلى موقع الحادث خلال 3 دقائق</span>
+    <div class="legend2"><span><i style="background:#3d8bff"></i>ماء</span><span><i style="background:#f1f1e6"></i>مركز الرغوة</span></div>
+    <div id="tanks"></div>
+    <div class="or" id="flowRow" style="margin-top:6px"><span>التدفق الحالي</span><span id="flowV">0 L/min</span></div>
+    <div class="or" id="windRow" style="margin:0"><span>الرياح (غربية)</span><span id="windV">270° · 12 kt<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12h17M14 6l6 6-6 6"/></svg></span></div>
+  </div>
+  <div id="radio"></div>
+</div>
 <aside id="panel"></aside>
 <div id="alarm"></div>
 <div id="alarmMsg">بلاغ طارئ<small>حريق في حظيرة الطائرات 3 مع تسرب مواد خطرة</small></div>
@@ -145,6 +188,7 @@ body.rec #panel{backdrop-filter:none!important;-webkit-backdrop-filter:none!impo
   <button id="prev" aria-label="المرحلة السابقة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
   <div id="chips"></div>
   <button id="next" aria-label="المرحلة التالية"><span class="lbl">التالي</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button>
+  <button id="snd" aria-label="الصوت"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path id="sndW" d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12" opacity=".35"/></svg><span class="lbl">الصوت</span></button>
   <button id="auto" aria-label="تشغيل تلقائي"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span class="lbl">تلقائي</span></button>
 </nav>
 <div id="lb"><img alt=""></div>
@@ -152,6 +196,8 @@ body.rec #panel{backdrop-filter:none!important;-webkit-backdrop-filter:none!impo
 
 <script src="three.min.js"></script>
 <script src="panther.js"></script>
+<script src="crew.js"></script>
+<script src="audio.js"></script>
 <script>
 (function(){
 'use strict';
@@ -222,7 +268,7 @@ const PH = [
    <div class="stat" style="--c:var(--teal);animation-delay:.2s"><b>30 م</b><span>القاذف الأول (السفلي): مدى يصل إلى 30 متر</span></div>
    <div class="stat" style="--c:var(--red);animation-delay:.35s"><b>70-90 م</b><span>القاذف الثاني (العلوي): مدى يقارب 70-90 متر حسب الضغط والإعداد</span></div>
   </div>
-  <p class="note">معدل التدفق يتأثر بإعداد المضخة والضغط وخطوط التصريف.</p>`},
+  <p class="note">معدل التدفق يتأثر بإعداد المضخة والضغط وخطوط التصريف. لوحة العمليات تستخدم معدلات تقديرية للمحاكاة (القاذف العلوي 6,000 ل/د، الأمامي 1,500 ل/د، الخط اليدوي 400 ل/د، رغوة 3%) مع ضغط الزمن ×6 أثناء الهجوم.</p>`},
  {name:'السيطرة ومجالات الاستخدام', x:418, move:0, cam:{o:[-10,27,40],l:[26,1,-2]}, lights:true, jets:'fade',
   html:`<p class="scn">إخماد الحريق واحتواء التسرب تحت طبقة الرغوة</p><p class="eyebrow">المرحلة 5 — مجالات الاستخدام</p>
   <h2 class="ttl">السيطرة على الحادث</h2><div class="bar"></div>
@@ -321,7 +367,7 @@ runway.rotation.x=-Math.PI/2; runway.position.set(256,0.02,0); runway.scale.x=36
   // glow sprites for lights
   const pts=[];for(let i=0;i<n;i++){const x=80+i*6;pts.push(x,.3,17.5,x,.3,-17.5);}
   const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
-  scene.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x4d8bff,size:2.2,map:glowTex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})));
+  scene.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x4d8bff,size:.9,map:glowTex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})));
 })();
 // distant airport skyline
 (function(){
@@ -482,9 +528,10 @@ let foamMesh, spillMesh;
   for(const [x,z] of [[-.7,.62],[-.7,-.62],[.7,.62],[.7,-.62]]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,.25,14),new THREE.MeshStandardMaterial({color:0x111}));w.rotation.x=Math.PI/2;w.position.set(x,.35,z);fk.add(w);}
   // chemical spill pool (irregular)
   const sh=new THREE.Shape();for(let i=0;i<=40;i++){const a=i/40*Math.PI*2,r=7.5*(1+.22*Math.sin(a*3)+.12*Math.sin(a*7+1));const x=Math.cos(a)*r*1.25,y=Math.sin(a)*r;i?sh.lineTo(x,y):sh.moveTo(x,y);}
-  spillMesh=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshStandardMaterial({color:0x4a5a12,roughness:.08,metalness:.55,emissive:0x1a2200,emissiveIntensity:.4,transparent:true,opacity:.9}));spillMesh.rotation.x=-Math.PI/2;spillMesh.position.set(SPILL.x,.05,SPILL.z);g.add(spillMesh);
+  spillMesh=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshStandardMaterial({color:0x1d2014,roughness:.04,metalness:.6,envMapIntensity:1.6,transparent:true,opacity:.92}));spillMesh.rotation.x=-Math.PI/2;spillMesh.position.set(SPILL.x,.05,SPILL.z);g.add(spillMesh);
   // foam blanket (grows during attack)
-  const fsh=sh.clone?sh:sh;foamMesh=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshStandardMaterial({color:0xf4f6f2,roughness:.95,transparent:true,opacity:0}));foamMesh.rotation.x=-Math.PI/2;foamMesh.position.set(SPILL.x,.09,SPILL.z);foamMesh.scale.set(.05,.05,1);g.add(foamMesh);
+  const fsh=sh.clone?sh:sh;const foamT=canvasTex(512,512,(c,w,h)=>{c.fillStyle='#e9ece6';c.fillRect(0,0,w,h);for(let i=0;i<2600;i++){const x=Math.random()*w,y=Math.random()*h,r=1+Math.random()*Math.random()*9;c.fillStyle=`rgba(255,255,255,${.4+Math.random()*.5})`;c.beginPath();c.arc(x,y,r,0,7);c.fill();c.strokeStyle='rgba(150,160,165,.35)';c.lineWidth=1;c.stroke();}},[.25,.25]);
+  foamMesh=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshStandardMaterial({map:foamT,color:0xffffff,roughness:.9,transparent:true,opacity:0}));foamMesh.rotation.x=-Math.PI/2;foamMesh.position.set(SPILL.x,.09,SPILL.z);foamMesh.scale.set(.05,.05,1);g.add(foamMesh);
   // scorch marks
   const sc=new THREE.Mesh(new THREE.CircleGeometry(14,40),new THREE.MeshBasicMaterial({map:glowTex,color:0x000000,transparent:true,opacity:.55,depthWrite:false}));sc.rotation.x=-Math.PI/2;sc.position.set(HX-4,.04,1);g.add(sc);
   // hazard zones: hot (red) & warm (orange) rings + cones and tape
@@ -495,9 +542,9 @@ let foamMesh, spillMesh;
   for(let i=0;i<40;i++){const a=Math.PI*.55+i/39*Math.PI*.9;const x=SPILL.x+Math.cos(a)*26,z=SPILL.z+Math.sin(a)*26;cm.makeTranslation(x,.37,z);cones.setMatrixAt(ci++,cm);cpos.push([x,z]);}g.add(cones);
   const tapeT=canvasTex(256,32,(c,w,h)=>{c.fillStyle='#fff';c.fillRect(0,0,w,h);c.fillStyle='#e01b1b';for(let x=-h;x<w;x+=40){c.beginPath();c.moveTo(x,h);c.lineTo(x+20,h);c.lineTo(x+20+h,0);c.lineTo(x+h,0);c.fill();}});
   for(let i=0;i<cpos.length-1;i++){const [x0,z0]=cpos[i],[x1,z1]=cpos[i+1];const len=Math.hypot(x1-x0,z1-z0);const t=new THREE.Mesh(new THREE.PlaneGeometry(len,.12),new THREE.MeshBasicMaterial({map:tapeT,side:THREE.DoubleSide}));t.position.set((x0+x1)/2,.72,(z0+z1)/2);t.rotation.y=-Math.atan2(z1-z0,x1-x0);g.add(t);}
-  // windsock (wind blowing toward +z)
-  const wp=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,8,8),steel);wp.position.set(HX-30,4,-26);g.add(wp);
-  const ws=new THREE.Mesh(new THREE.ConeGeometry(.55,3,16,1,true),new THREE.MeshStandardMaterial({color:0xff6a00,side:THREE.DoubleSide,roughness:.7}));ws.rotation.x=-Math.PI/2;ws.position.set(HX-30,7.7,-27.6);g.add(ws);
+  // windsock: wind from 270° → blowing toward +x (away from the responding trucks)
+  const wp=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,8,8),steel);wp.position.set(HX-36,4,-36);g.add(wp);
+  const ws=new THREE.Mesh(new THREE.ConeGeometry(.55,3,16,1,true),new THREE.MeshStandardMaterial({color:0xff6a00,side:THREE.DoubleSide,roughness:.7}));ws.rotation.z=-Math.PI/2;ws.rotation.x=.12;ws.position.set(HX-36+1.6,7.7,-36);g.add(ws);
   // perimeter fence + light poles around the hangar apron
   for(const z of [-HW-8,HW+8]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.12,.15,12,8),steel);p.position.set(HX-16,6,z);g.add(p);const h=new THREE.Mesh(new THREE.BoxGeometry(1.2,.3,.6),new THREE.MeshBasicMaterial({color:0xfff2d8}));h.position.set(HX-16,12,z*.97);g.add(h);}
   scene.add(g);
@@ -517,57 +564,323 @@ const beaconR={intensity:0};
 for(const s of [-1,1]){const sl=new THREE.SpotLight(0xfff1dc,2.4,80,.5,.55,1.2);sl.position.set(6.2,.95,s*1.1);sl.target.position.set(30,0,s*2);truck.add(sl);truck.add(sl.target);}
 const blob=new THREE.Mesh(new THREE.PlaneGeometry(13,4),new THREE.MeshBasicMaterial({map:glowTex,color:0x000000,transparent:true,opacity:.5,depthWrite:false}));blob.rotation.x=-Math.PI/2;blob.position.y=.03;truck.add(blob);
 
-/* ---------------- PARTICLES ---------------- */
-function makePoints(n,size,color,blend,tex,opacity){const geo=new THREE.BufferGeometry();const pos=new Float32Array(n*3).fill(-999);const col=new Float32Array(n*3);geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));const mat=new THREE.PointsMaterial({size,map:tex,vertexColors:true,transparent:true,opacity:opacity||1,depthWrite:false,blending:blend,color});const p=new THREE.Points(geo,mat);p.frustumCulled=false;scene.add(p);return {p,pos,col,vel:new Float32Array(n*3),life:new Float32Array(n).fill(99),max:new Float32Array(n).fill(1),n};}
-const FIRE=makePoints(1100,2.7,0xffffff,THREE.AdditiveBlending,glowTex);
-const SMOKE=makePoints(340,11,0xffffff,THREE.NormalBlending,smokeTex,.55);
-const WATER=makePoints(2600,.38,0xffffff,THREE.AdditiveBlending,glowTex,.7);
-const MIST=makePoints(500,3.5,0xffffff,THREE.AdditiveBlending,glowTex,.35);
-const FIREP=1;const fireSrc=[{p:[SPILL.x,.15,SPILL.z],r:6.5,w:.38},{p:[INC.x-4.5,1.1,-6.5],r:2.6,w:.27},{p:[INC.x-10,.5,2.2],r:1.6,w:.12},{p:[INC.x+22,1.8,-4],r:3.2,w:.23}];
-let fireLevel=1, smokeLevel=1, foam=0;
+/* ---------------- FX: GPU particles (fire, smoke, embers, spray) ---------------- */
+// Wind from 270° (west) at ~12 kt → blows toward +x, away from the responding trucks (upwind approach).
+const WIND=new THREE.Vector3(1,0,-.12).normalize(), WIND_MS=6;
+const U_SCALE={value:400}, U_TIME={value:0};
+const GLSL_COMMON=`
+varying float vAge;varying float vSeed;varying float vTint;varying float vFog;
+float h21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1.,0.)),f.x),mix(h21(i+vec2(0.,1.)),h21(i+1.),f.x),f.y);}
+const vec3 FOGC=vec3(.043,.07,.125);
+`;
+const FX_VS=GLSL_COMMON+`
+attribute float aSize;attribute float aAge;attribute float aSeed;attribute float aTint;uniform float uScale;
+void main(){vAge=aAge;vSeed=aSeed;vTint=aTint;vec4 mv=modelViewMatrix*vec4(position,1.);float d=-mv.z;
+ vFog=exp(-.0042*.0042*d*d);gl_Position=projectionMatrix*mv;gl_PointSize=aAge>=1.?0.:aSize*uScale/max(d,.5);}`;
+const FLAME_FS=GLSL_COMMON+`uniform float uTime;
+void main(){vec2 p=gl_PointCoord*2.-1.;p.y=-p.y;
+ float n=n2(p*2.3+vec2(vSeed*17.,-uTime*3.2-vSeed*9.));
+ p.x+=(n-.5)*.45*(p.y+1.);
+ float w=mix(1.,.22,clamp((p.y+.7)/1.7,0.,1.));
+ float d=length(vec2(p.x/w,(p.y+.2)*.85));
+ float a=smoothstep(1.,.1,d)*(.45+.75*n);
+ vec3 c=mix(vec3(1.,.93,.72),vec3(1.,.5,.12),smoothstep(0.,.45,vAge+d*.35));
+ c=mix(c,vec3(.45,.08,.02),smoothstep(.45,1.,vAge));
+ a*=smoothstep(0.,.1,vAge)*(1.-smoothstep(.55,1.,vAge));
+ gl_FragColor=vec4(c*a*vFog*.85,1.);}`;
+const EMBER_FS=GLSL_COMMON+`uniform float uTime;
+void main(){vec2 p=gl_PointCoord*2.-1.;float a=smoothstep(1.,0.,dot(p,p));float fl=.6+.4*sin(uTime*25.+vSeed*60.);
+ gl_FragColor=vec4(vec3(1.,.55,.15)*a*fl*(1.-vAge)*vFog,1.);}`;
+const SMOKE_FS=GLSL_COMMON+`uniform sampler2D uTex;uniform float uTime;uniform float uOp;uniform float uGlow;
+void main(){vec2 p=gl_PointCoord-.5;float r=vSeed*6.28+vAge*2.*(vSeed-.5);float c=cos(r),s=sin(r);p=mat2(c,-s,s,c)*p;
+ float t=texture2D(uTex,clamp(p+.5,0.,1.)).a;
+ float n=n2((p+vSeed*3.)*5.+vec2(uTime*.15,-uTime*.25));
+ float a=t*(.55+.6*n)*smoothstep(0.,.1,vAge)*(1.-smoothstep(.5,1.,vAge));
+ vec3 col=mix(vec3(.075,.068,.062),vec3(.58,.6,.62),vTint);
+ col+=vec3(1.,.42,.12)*.55*uGlow*(1.-smoothstep(0.,.3,vAge))*(1.-vTint);
+ col*=.85+.3*n;
+ gl_FragColor=vec4(mix(FOGC,col,vFog),a*uOp);}`;
+const DROP_FS=GLSL_COMMON+`uniform float uOp;
+void main(){vec2 p=gl_PointCoord*2.-1.;float a=smoothstep(1.,0.,dot(p,p));
+ gl_FragColor=vec4(mix(FOGC,vec3(.8,.86,.92),vFog),a*uOp*(1.-vAge*vAge));}`;
+
+function makeFX(n,frag,o){
+  o=o||{}; const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(n*3).fill(0),size=new Float32Array(n),age=new Float32Array(n).fill(1),seed=new Float32Array(n),tint=new Float32Array(n);
+  for(let i=0;i<n;i++)seed[i]=Math.random();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('aSize',new THREE.BufferAttribute(size,1));
+  geo.setAttribute('aAge',new THREE.BufferAttribute(age,1));geo.setAttribute('aSeed',new THREE.BufferAttribute(seed,1));geo.setAttribute('aTint',new THREE.BufferAttribute(tint,1));
+  const mat=new THREE.ShaderMaterial({uniforms:Object.assign({uScale:U_SCALE,uTime:U_TIME,uOp:{value:o.op==null?1:o.op}},o.u||{}),vertexShader:FX_VS,fragmentShader:frag,transparent:true,depthWrite:false,blending:o.blend||THREE.NormalBlending});
+  const p=new THREE.Points(geo,mat);p.frustumCulled=false;p.renderOrder=o.order||0;scene.add(p);
+  const S={p,mat,geo,pos,size,age,seed,tint,n,vel:new Float32Array(n*3),life:new Float32Array(n),max:new Float32Array(n).fill(1),s0:new Float32Array(n),acc:0,cur:0,
+    flush(){for(const k of ['position','aSize','aAge','aTint'])geo.attributes[k].needsUpdate=true;},
+    // round-robin free slot (returns -1 if none free)
+    slot(){for(let j=0;j<n;j++){const i=(S.cur+j)%n;if(S.age[i]>=1){S.cur=(i+1)%n;return i;}}return -1;}};
+  return S;
+}
+const FIRE=makeFX(1400,FLAME_FS,{blend:THREE.AdditiveBlending,order:2});
+const EMBER=makeFX(260,EMBER_FS,{blend:THREE.AdditiveBlending,order:3});
+const SMOKE=makeFX(520,SMOKE_FS,{op:.9,order:1,u:{uTex:{value:smokeTex},uGlow:{value:1}}});
+const SPRAY=makeFX(2200,DROP_FS,{op:.55,order:4});
+const MIST=makeFX(420,DROP_FS,{op:.16,order:4});
+
+const fireSrc=[{p:[SPILL.x,.15,SPILL.z],r:6.5,w:.38,fh:1},{p:[INC.x-4.5,1.1,-6.5],r:2.6,w:.27,fh:.8},{p:[INC.x-10,.5,2.2],r:1.6,w:.12,fh:.6},{p:[INC.x+22,1.8,-4],r:3.2,w:.23,fh:.9}];
+let fireLevel=1, smokeLevel=1, foam=0, steam=0;
 function pickSrc(){let r=Math.random(),a=0;for(const s of fireSrc){a+=s.w;if(r<=a)return s;}return fireSrc[0];}
 function updFire(dt){
-  const F=FIRE;for(let i=0;i<F.n;i++){F.life[i]+=dt;const k=i*3;
-    if(F.life[i]>F.max[i]){ if(Math.random()<fireLevel){const s=pickSrc();const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*s.r;F.pos[k]=s.p[0]+Math.cos(a)*r*1.3;F.pos[k+1]=s.p[1]+Math.random()*.4;F.pos[k+2]=s.p[2]+Math.sin(a)*r;F.vel[k]=(Math.random()-.5)*.8;F.vel[k+1]=2+Math.random()*3;F.vel[k+2]=(Math.random()-.5)*.8;F.life[i]=0;F.max[i]=.6+Math.random()*1.1;} else {F.pos[k+1]=-999;continue;} }
-    F.vel[k+1]+=dt*1.5;F.pos[k]+=F.vel[k]*dt+Math.sin(T*3+i)*.01;F.pos[k+1]+=F.vel[k+1]*dt;F.pos[k+2]+=F.vel[k+2]*dt;
-    const u=F.life[i]/F.max[i];const f=(1-u)*.55;F.col[k]=f*(1.0)+.08*u;F.col[k+1]=f*(.62-u*.5);F.col[k+2]=f*(.16-u*.16);}
-  F.p.geometry.attributes.position.needsUpdate=true;F.p.geometry.attributes.color.needsUpdate=true;
-  const S=SMOKE;for(let i=0;i<S.n;i++){S.life[i]+=dt;const k=i*3;
-    if(S.life[i]>S.max[i]){ if(Math.random()<smokeLevel){const s=pickSrc();S.pos[k]=s.p[0]+(Math.random()-.5)*s.r;S.pos[k+1]=s.p[1]+2+Math.random()*2;S.pos[k+2]=s.p[2]+(Math.random()-.5)*s.r;S.vel[k]=(Math.random()-.5)*.6;S.vel[k+1]=2.2+Math.random()*1.8;S.vel[k+2]=-(1.2+Math.random()*1.4);S.life[i]=0;S.max[i]=5+Math.random()*4;} else {S.pos[k+1]=-999;continue;} }
-    S.pos[k]+=S.vel[k]*dt;S.pos[k+1]+=S.vel[k+1]*dt;S.pos[k+2]+=S.vel[k+2]*dt;const u=S.life[i]/S.max[i];const c=(.16+u*.12)*(1-u*.5)*(fireLevel>.05?1:1.6);S.col[k]=c*1.12;S.col[k+1]=c*1.04;S.col[k+2]=c*.78;}
-  S.p.geometry.attributes.position.needsUpdate=true;S.p.geometry.attributes.color.needsUpdate=true;
+  // flames
+  const F=FIRE; F.acc+=dt*1500*fireLevel;
+  while(F.acc>=1){F.acc--;const i=F.slot();if(i<0)break;const s=pickSrc(),k=i*3;const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*s.r;
+    F.pos[k]=s.p[0]+Math.cos(a)*r*1.3;F.pos[k+1]=s.p[1]+Math.random()*.3;F.pos[k+2]=s.p[2]+Math.sin(a)*r;
+    const edge=r/s.r;F.vel[k]=(Math.random()-.5)*.6;F.vel[k+1]=(2.2+Math.random()*2.6)*s.fh*(1.15-edge*.5);F.vel[k+2]=(Math.random()-.5)*.6;
+    F.life[i]=0;F.max[i]=.55+Math.random()*.9;F.s0[i]=(1.6+Math.random()*2.2)*(1.1-edge*.45)*Math.max(.5,s.r/5);F.age[i]=0;}
+  for(let i=0;i<F.n;i++){if(F.age[i]>=1)continue;const k=i*3;F.life[i]+=dt;const u=F.life[i]/F.max[i];if(u>=1){F.age[i]=1;continue;}
+    F.vel[k+1]+=dt*2.2;F.vel[k]+=WIND.x*dt*3*u;F.vel[k+2]+=WIND.z*dt*3*u;
+    F.pos[k]+=F.vel[k]*dt;F.pos[k+1]+=F.vel[k+1]*dt;F.pos[k+2]+=F.vel[k+2]*dt;F.age[i]=u;F.size[i]=F.s0[i]*(1-.55*u)*(.85+.3*Math.sin(u*3.1));}
+  F.flush();
+  // embers
+  const E=EMBER; E.acc+=dt*70*fireLevel;
+  while(E.acc>=1){E.acc--;const i=E.slot();if(i<0)break;const s=pickSrc(),k=i*3;E.pos[k]=s.p[0]+(Math.random()-.5)*s.r*1.6;E.pos[k+1]=s.p[1]+1+Math.random()*2;E.pos[k+2]=s.p[2]+(Math.random()-.5)*s.r*1.4;
+    E.vel[k]=(Math.random()-.5)*2;E.vel[k+1]=4+Math.random()*5;E.vel[k+2]=(Math.random()-.5)*2;E.life[i]=0;E.max[i]=1.5+Math.random()*2.5;E.size[i]=.12+Math.random()*.14;E.age[i]=0;}
+  for(let i=0;i<E.n;i++){if(E.age[i]>=1)continue;const k=i*3;E.life[i]+=dt;const u=E.life[i]/E.max[i];if(u>=1){E.age[i]=1;continue;}
+    E.vel[k]+=(WIND.x*WIND_MS-E.vel[k])*dt*.8+(Math.random()-.5)*dt*8;E.vel[k+2]+=(WIND.z*WIND_MS-E.vel[k+2])*dt*.8+(Math.random()-.5)*dt*8;E.vel[k+1]-=dt*1.2;
+    E.pos[k]+=E.vel[k]*dt;E.pos[k+1]+=E.vel[k+1]*dt;E.pos[k+2]+=E.vel[k+2]*dt;E.age[i]=u;}
+  E.flush();
+  // smoke: dense black hydrocarbon smoke, turning to white steam as foam/water knocks the fire down
+  const S=SMOKE; S.acc+=dt*46*smokeLevel;
+  while(S.acc>=1){S.acc--;const i=S.slot();if(i<0)break;const s=pickSrc(),k=i*3;
+    S.pos[k]=s.p[0]+(Math.random()-.5)*s.r;S.pos[k+1]=s.p[1]+2.5+Math.random()*2.5;S.pos[k+2]=s.p[2]+(Math.random()-.5)*s.r;
+    S.vel[k]=(Math.random()-.5)*.8;S.vel[k+1]=2.6+Math.random()*2;S.vel[k+2]=(Math.random()-.5)*.8;
+    S.life[i]=0;S.max[i]=9+Math.random()*6;S.s0[i]=3+Math.random()*3;S.age[i]=0;S.tint[i]=Math.min(1,steam*(.75+Math.random()*.35));}
+  for(let i=0;i<S.n;i++){if(S.age[i]>=1)continue;const k=i*3;S.life[i]+=dt;const u=S.life[i]/S.max[i];if(u>=1){S.age[i]=1;continue;}
+    const hgt=S.pos[k+1], wv=WIND_MS*Math.min(1.1,.25+hgt/28);   // wind shear: stronger with height
+    S.vel[k]+=(WIND.x*wv-S.vel[k])*dt*.35;S.vel[k+2]+=(WIND.z*wv-S.vel[k+2])*dt*.35;S.vel[k+1]*=1-dt*.06;
+    S.pos[k]+=S.vel[k]*dt;S.pos[k+1]+=S.vel[k+1]*dt;S.pos[k+2]+=S.vel[k+2]*dt;S.age[i]=u;S.size[i]=S.s0[i]+u*20;}
+  S.mat.uniforms.uGlow.value=Math.min(1,fireLevel*1.2);
+  S.flush();
 }
-const G=9.8;const _v=new THREE.Vector3(),_o=new THREE.Vector3();
+
+/* ---------------- WATER / FOAM STREAMS ---------------- */
+// Each monitor (roof turret, bumper turret, 2nd truck) is a nozzle: it yaws toward its target, and the stream
+// is a ballistic jet solved so it lands on the target. Rendered as a coherent core (tube) + breakup spray + impact mist.
+const G=9.8;const _v=new THREE.Vector3(),_o=new THREE.Vector3(),_d=new THREE.Vector3(),_t=new THREE.Vector3(),_s=new THREE.Vector3(),_n=new THREE.Vector3(),_up=new THREE.Vector3(0,1,0);
 function launchSpeed(d,th,dh){const c=Math.cos(th),den=2*c*c*(d*Math.tan(th)+dh);return Math.sqrt(G*d*d/Math.max(den,.1));}
-let jetRoof=0, jetBump=0; // 0..1 flow
-const jets=[{tip:roofTip,flow:()=>jetRoof,th:.28,d:46,h1:1.0,share:.62},{tip:bumpTip,flow:()=>jetBump,th:.16,d:31,h1:.1,share:.38}];
-let spawnAcc=0;
-function updWater(dt){
-  const W=WATER,Mi=MIST;
-  const total=jetRoof+jetBump; spawnAcc+=dt*1300*(total>0?1:0);
-  let toSpawn=spawnAcc|0; spawnAcc-=toSpawn;
-  const fwd=new THREE.Vector3(1,0,0);
-  for(let i=0;i<W.n;i++){const k=i*3;
-    if(W.pos[k+1]<-0.5||W.life[i]>6){ if(toSpawn>0&&total>0){toSpawn--; const j=Math.random()*total<jetRoof?jets[0]:jets[1]; j.tip.getWorldPosition(_o);
-        const th=j.th+(Math.random()-.5)*.035; const v=launchSpeed(j.d*(0.93+Math.random()*.1),th,_o.y-j.h1)*(j===jets[0]?Math.min(1,jetRoof*1.1):Math.min(1,jetBump*1.1));
-        const yaw=(Math.random()-.5)*.03; W.pos[k]=_o.x;W.pos[k+1]=_o.y;W.pos[k+2]=_o.z; W.vel[k]=v*Math.cos(th)*Math.cos(yaw);W.vel[k+1]=v*Math.sin(th);W.vel[k+2]=v*Math.cos(th)*Math.sin(yaw)+(j===jets[0]?.06:0);W.life[i]=0;
-      } else {W.pos[k+1]=-999;continue;} }
-    W.life[i]+=dt;W.vel[k+1]-=G*dt;W.vel[k]*=1-dt*.05;W.pos[k]+=W.vel[k]*dt;W.pos[k+1]+=W.vel[k+1]*dt;W.pos[k+2]+=W.vel[k+2]*dt;
-    const u=Math.min(1,W.life[i]/2.4);W.col[k]=.88+.1*(1-u);W.col[k+1]=.92+.06*(1-u);W.col[k+2]=.97;
-    if(W.pos[k+1]<0.05){ // splash -> mist
-      const m=(Math.random()*Mi.n)|0;const mk=m*3;Mi.pos[mk]=W.pos[k];Mi.pos[mk+1]=.3;Mi.pos[mk+2]=W.pos[k+2];Mi.vel[mk]=(Math.random()-.5)*3;Mi.vel[mk+1]=1+Math.random()*2.5;Mi.vel[mk+2]=(Math.random()-.5)*3;Mi.life[m]=0;Mi.max[m]=.8+Math.random()*.8;W.pos[k+1]=-999;}
-  }
-  W.p.geometry.attributes.position.needsUpdate=true;W.p.geometry.attributes.color.needsUpdate=true;
-  for(let i=0;i<Mi.n;i++){const k=i*3;Mi.life[i]+=dt;if(Mi.life[i]>Mi.max[i]){Mi.pos[k+1]=-999;continue;}Mi.vel[k+1]-=dt*1.5;Mi.pos[k]+=Mi.vel[k]*dt;Mi.pos[k+1]+=Mi.vel[k+1]*dt;Mi.pos[k+2]+=Mi.vel[k+2]*dt;const f=1-Mi.life[i]/Mi.max[i];Mi.col[k]=.8*f;Mi.col[k+1]=.9*f;Mi.col[k+2]=f;}
-  Mi.p.geometry.attributes.position.needsUpdate=true;Mi.p.geometry.attributes.color.needsUpdate=true;
+const STREAM_VS=`varying float vU;varying float vA;varying float vEdge;varying float vFog;
+void main(){vU=uv.x;vA=uv.y;vec4 mv=modelViewMatrix*vec4(position,1.);vec3 nv=normalize(normalMatrix*normal);vEdge=abs(dot(nv,normalize(-mv.xyz)));
+ float d=-mv.z;vFog=exp(-.0042*.0042*d*d);gl_Position=projectionMatrix*mv;}`;
+const STREAM_FS=`uniform float uTime;uniform float uFlow;uniform float uFoam;varying float vU;varying float vA;varying float vEdge;varying float vFog;
+float h21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1.,0.)),f.x),mix(h21(i+vec2(0.,1.)),h21(i+1.),f.x),f.y);}
+void main(){float st=n2(vec2(vU*55.-uTime*30.,vA*7.));float st2=n2(vec2(vU*14.-uTime*9.,vA*3.+3.));
+ float brk=smoothstep(.25,.85,vU);
+ float a=(1.-smoothstep(.7,1.,vU))*mix(.95,.18+.9*st*st2,brk);
+ a*=pow(vEdge,mix(.35,1.2,brk))*uFlow*smoothstep(0.,.02,vU);
+ vec3 c=mix(vec3(.78,.86,.95),vec3(.97,.97,.95),uFoam)*(.8+.35*st);
+ gl_FragColor=vec4(mix(vec3(.043,.07,.125),c,vFog),clamp(a,0.,1.));}`;
+const NOZ=[];
+function addNozzle(o){
+  const N=56,R=10;const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(N*R*3),nor=new Float32Array(N*R*3),uv=new Float32Array(N*R*2),idx=[];
+  for(let i=0;i<N;i++)for(let k=0;k<R;k++){uv[(i*R+k)*2]=i/(N-1);uv[(i*R+k)*2+1]=k/R;}
+  for(let i=0;i<N-1;i++)for(let k=0;k<R;k++){const a=i*R+k,b=i*R+(k+1)%R,c=(i+1)*R+k,d=(i+1)*R+(k+1)%R;idx.push(a,c,b,b,c,d);}
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('normal',new THREE.BufferAttribute(nor,3));geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));geo.setIndex(idx);
+  const mat=new THREE.ShaderMaterial({uniforms:{uTime:U_TIME,uFlow:{value:0},uFoam:{value:o.foam?1:0}},vertexShader:STREAM_VS,fragmentShader:STREAM_FS,transparent:true,depthWrite:false,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(geo,mat);mesh.frustumCulled=false;mesh.renderOrder=5;mesh.visible=false;scene.add(mesh);
+  const nz=Object.assign({flow:0,want:0,N,R,geo,pos,nor,mesh,mat,acc:0,macc:0,pitchRest:o.pitchObj?o.pitchObj.rotation.z:0},o);
+  NOZ.push(nz);return nz;
 }
+function updWater(dt){
+  const S=SPRAY,Mi=MIST;
+  for(const z of NOZ){
+    z.flow+=(z.want-z.flow)*Math.min(1,dt*(z.want>z.flow?z.rise:2.5));
+    z.press=Math.max(0,Math.min(1,(z.press||0)+dt*(z.want>0?.7:-1.5)));
+    // aim: yaw toward the target, elevate for range; park when idle
+    const active=z.want>0||z.flow>.02;
+    z.yawObj.parent.updateWorldMatrix(true,false);
+    _t.copy(z.target);z.yawObj.parent.worldToLocal(_t);
+    const wantYaw=active?Math.atan2(-(_t.z-z.yawObj.position.z),_t.x-z.yawObj.position.x):0;
+    z.yawObj.rotation.y+=(wantYaw-z.yawObj.rotation.y)*Math.min(1,dt*1.6);
+    if(z.pitchObj){const wp=active?z.elev:z.pitchRest;z.pitchObj.rotation.z+=(wp-z.pitchObj.rotation.z)*Math.min(1,dt*1.4);}
+    z.mesh.visible=z.flow>.01;z.mat.uniforms.uFlow.value=Math.min(1,z.flow*1.4);
+    if(!z.mesh.visible)continue;
+    z.tip.updateWorldMatrix(true,false);z.tip.getWorldPosition(_o);_d.set(1,0,0).transformDirection(z.tip.matrixWorld);
+    const th=Math.asin(THREE.MathUtils.clamp(_d.y,-.9,.9));const hd=Math.hypot(_d.x,_d.z)||1;
+    const D=Math.hypot(z.target.x-_o.x,z.target.z-_o.z);
+    // pressure builds as the pump comes up: the stream walks out to the target
+    const v=Math.min(48,launchSpeed(D,th,_o.y-z.target.y))*(.4+.6*z.press);
+    const vx=v*Math.cos(th)*_d.x/hd,vz=v*Math.cos(th)*_d.z/hd,vy=v*Math.sin(th);
+    const tEnd=(vy+Math.sqrt(vy*vy+2*G*Math.max(.1,_o.y)))/G;
+    const drift=.35*WIND_MS*.06; // light wind drift of the stream
+    const P=(t,out)=>out.set(_o.x+vx*t+WIND.x*drift*t*t,_o.y+vy*t-.5*G*t*t,_o.z+vz*t+WIND.z*drift*t*t);
+    const N=z.N,R=z.R,pos=z.pos,nor=z.nor;
+    for(let i=0;i<N;i++){const u=i/(N-1),t=u*tEnd;P(t,_v);
+      _t.set(vx+2*WIND.x*drift*t,vy-G*t,vz+2*WIND.z*drift*t).normalize();
+      _s.crossVectors(_t,_up).normalize();_n.crossVectors(_s,_t);
+      const r=(z.r0+(z.r1-z.r0)*Math.pow(u,1.4))*(.55+.45*Math.min(1,z.flow))+Math.sin(u*40-T*30)*.02*u;
+      for(let k=0;k<R;k++){const a=k/R*Math.PI*2,c=Math.cos(a),s=Math.sin(a),j=(i*R+k)*3;
+        const nx=_s.x*c+_n.x*s,ny=_s.y*c+_n.y*s,nz=_s.z*c+_n.z*s;
+        pos[j]=_v.x+nx*r;pos[j+1]=_v.y+ny*r;pos[j+2]=_v.z+nz*r;nor[j]=nx;nor[j+1]=ny;nor[j+2]=nz;}}
+    z.geo.attributes.position.needsUpdate=true;z.geo.attributes.normal.needsUpdate=true;
+    // breakup spray: droplets shed from the outer stream and rain down
+    z.acc+=dt*z.spray*z.flow;
+    while(z.acc>=1){z.acc--;const i=S.slot();if(i<0)break;const u=.3+Math.random()*.68,t=u*tEnd;P(t,_v);const k=i*3,sp=1.5+u*3;
+      S.pos[k]=_v.x+(Math.random()-.5)*z.r1*u;S.pos[k+1]=_v.y+(Math.random()-.5)*z.r1*u;S.pos[k+2]=_v.z+(Math.random()-.5)*z.r1*u;
+      S.vel[k]=vx*.85+(Math.random()-.5)*sp;S.vel[k+1]=(vy-G*t)*.85+(Math.random()-.5)*sp;S.vel[k+2]=vz*.85+(Math.random()-.5)*sp;
+      S.life[i]=0;S.max[i]=3;S.size[i]=.14+Math.random()*.22+u*.15;S.age[i]=0;}
+    // impact mist / splash at the landing point
+    z.macc+=dt*55*z.flow;P(tEnd,_v);
+    while(z.macc>=1){z.macc--;const i=Mi.slot();if(i<0)break;const k=i*3;Mi.pos[k]=_v.x+(Math.random()-.5)*3;Mi.pos[k+1]=.3;Mi.pos[k+2]=_v.z+(Math.random()-.5)*3;
+      Mi.vel[k]=(Math.random()-.5)*3+vx*.08;Mi.vel[k+1]=1+Math.random()*2.5;Mi.vel[k+2]=(Math.random()-.5)*3+vz*.08;Mi.life[i]=0;Mi.max[i]=1.2+Math.random()*1.2;Mi.size[i]=1.5+Math.random()*2.5;Mi.age[i]=0;}
+  }
+  for(let i=0;i<S.n;i++){if(S.age[i]>=1)continue;const k=i*3;S.life[i]+=dt;S.vel[k+1]-=G*dt;S.vel[k]*=1-dt*.4;S.vel[k+2]*=1-dt*.4;
+    S.pos[k]+=S.vel[k]*dt;S.pos[k+1]+=S.vel[k+1]*dt;S.pos[k+2]+=S.vel[k+2]*dt;S.age[i]=Math.min(.95,S.life[i]/S.max[i]);if(S.pos[k+1]<.05)S.age[i]=1;}
+  S.flush();
+  for(let i=0;i<Mi.n;i++){if(Mi.age[i]>=1)continue;const k=i*3;Mi.life[i]+=dt;const u=Mi.life[i]/Mi.max[i];if(u>=1){Mi.age[i]=1;continue;}
+    Mi.vel[k+1]-=dt*1.2;Mi.vel[k]+=(WIND.x*WIND_MS*.5-Mi.vel[k])*dt;Mi.pos[k]+=Mi.vel[k]*dt;Mi.pos[k+1]=Math.max(.2,Mi.pos[k+1]+Mi.vel[k+1]*dt);Mi.pos[k+2]+=Mi.vel[k+2]*dt;Mi.age[i]=u;Mi.size[i]+=dt*2;}
+  Mi.flush();
+}
+
+/* ---------------- RESPONSE: monitors, 2nd Panther, crew, decon ---------------- */
+function addBeaconGlow(parts){return parts.beacons.map(b=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x3d7dff,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:0,fog:false}));sp.scale.set(1.7,1.7,1);b.add(sp);return sp;});}
+const glow1=addBeaconGlow(TP);
+// Truck 1: roof turret lays the foam blanket on the pool, bumper turret foams the near edge of the spill.
+const nzRoof=addNozzle({tip:roofTip,yawObj:TP.turretYaw,pitchObj:pitch,elev:.3,target:new THREE.Vector3(SPILL.x-1,0,SPILL.z-1),r0:.08,r1:1.15,spray:900,rise:.8,foam:true});
+const nzBump=addNozzle({tip:bumpTip,yawObj:TP.bumperTurret,pitchObj:TP.bumperTurret,elev:.13,target:new THREE.Vector3(SPILL.x-9,0,SPILL.z-1),r0:.05,r1:.6,spray:420,rise:1.3,foam:true});
+
+// Truck 2 (second ARFF unit): arrives during phase 3, takes the upwind flank and cools the drums at the hangar door.
+const truck2=buildPanther(THREE,{lite:true});truck2.visible=false;scene.add(truck2);const TP2=truck2.userData.parts;
+const glow2=addBeaconGlow(TP2);
+const beacon2=new THREE.PointLight(0x2a6bff,0,22,2);beacon2.position.set(4.4,4.2,0);truck2.add(beacon2);
+for(const s of [-1,1]){const sl=new THREE.SpotLight(0xfff1dc,2,70,.5,.55,1.2);sl.position.set(6.2,.95,s*1.1);sl.target.position.set(30,0,s*2);truck2.add(sl);truck2.add(sl.target);}
+const T2PATH=new THREE.CubicBezierCurve3(new THREE.Vector3(296,0,-7),new THREE.Vector3(396,0,-7),new THREE.Vector3(416,0,-31),new THREE.Vector3(428,0,-24));
+const T2LEN=T2PATH.getLength(), T2DUR=12;
+let t2s=0,t2Wheel=0,t2Speed=0;
+const nz2=addNozzle({tip:TP2.roofTip,yawObj:TP2.turretYaw,pitchObj:TP2.turretPitch,elev:.27,target:new THREE.Vector3(INC.x-5,0,-6),r0:.08,r1:1.1,spray:800,rise:.7,foam:true});
+function placeTruck2(s){const u=THREE.MathUtils.clamp(s/T2LEN,0,1);const p=T2PATH.getPointAt(u),tg=T2PATH.getTangentAt(u);truck2.position.copy(p);truck2.rotation.y=Math.atan2(-tg.z,tg.x);}
+placeTruck2(0);
+
+// Decontamination corridor in the warm zone, upwind of the spill
+(function(){
+  const g=new THREE.Group();g.name='decon';
+  const blueM=new THREE.MeshStandardMaterial({color:0x1f62c8,roughness:.5,side:THREE.DoubleSide});
+  const waterM=new THREE.MeshStandardMaterial({color:0x7fb2d8,roughness:.05,metalness:.3,transparent:true,opacity:.7});
+  const oranM=new THREE.MeshStandardMaterial({color:0xf06a12,roughness:.6});
+  const matM=new THREE.MeshStandardMaterial({color:0x3c4148,roughness:.9});
+  const Z=27;
+  for(const [i,x] of [[0,421],[1,423.6],[2,426.2]]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.95,.9,.32,24,1,true),blueM);p.position.set(x,.16,Z);p.castShadow=true;g.add(p);
+    const w=new THREE.Mesh(new THREE.CircleGeometry(.9,24),waterM);w.rotation.x=-Math.PI/2;w.position.set(x,.22,Z);g.add(w);}
+  const mat=new THREE.Mesh(new THREE.BoxGeometry(10,.03,1.6),matM);mat.position.set(424,.02,Z);mat.receiveShadow=true;g.add(mat);
+  // shower arch
+  const arch=new THREE.Mesh(new THREE.TorusGeometry(1.25,.06,8,24,Math.PI),oranM);arch.position.set(423.6,1.15,Z);arch.rotation.y=Math.PI/2;arch.scale.set(1,1.4,1);g.add(arch);
+  for(const s of [-1,1]){const l=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,1.15,8),oranM);l.position.set(423.6,.58,Z+s*1.25);g.add(l);}
+  // sign + entry/exit cones
+  const sT=canvasTex(512,128,(c,w,h)=>{c.fillStyle='#f2c230';c.fillRect(0,0,w,h);c.fillStyle='#111';c.font='bold 64px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('DECON · إزالة التلوث',w/2,h/2+4);});
+  const sg=new THREE.Mesh(new THREE.PlaneGeometry(3.2,.8),new THREE.MeshBasicMaterial({map:sT,side:THREE.DoubleSide}));sg.position.set(423.6,2.95,Z);g.add(sg);
+  const cM=new THREE.MeshStandardMaterial({color:0xff5a0a,roughness:.5,emissive:0x331000});
+  for(const x of [418.5,429.5])for(const s of [-1,1]){const c=new THREE.Mesh(new THREE.ConeGeometry(.22,.7,12),cM);c.position.set(x,.35,Z+s*1.1);g.add(c);}
+  scene.add(g);
+})();
+
+// Hose line from truck 1's pump panel to the handline crew
+const hoseM=new THREE.MeshStandardMaterial({color:0xe6dfcc,roughness:.8});
+const hose=new THREE.Mesh(new THREE.BufferGeometry(),hoseM);hose.castShadow=true;hose.visible=false;scene.add(hose);
+function layHose(x1,z1){const P=[new THREE.Vector3(418.15,.9,1.55),new THREE.Vector3(418.4,.06,2.4),new THREE.Vector3((418+x1)/2-1,.06,Math.max(z1+1.5,(1.6+z1)/2+1.4)),new THREE.Vector3(x1-1.1,.06,z1+.4),new THREE.Vector3(x1-.2,.9,z1+.05)];
+  hose.geometry.dispose();hose.geometry=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),48,.045,6,false);hose.visible=true;}
+
+// Responders. Stations are world positions per phase: [x, z, faceX, faceZ, pose]. Hidden before `appear`.
+const CREW=[
+ {kind:'officer',from:[421,1.8],st:{3:[413,7,462,3,'radio']}},
+ {kind:'turnout',from:[421.2,1.8],st:{3:[423.6,4.6,462,3,'idle'],4:[440,10.6,462,6,'nozzle'],6:[426,5,418,0,'idle']},hose:true},
+ {kind:'turnout',from:[420.6,1.8],st:{3:[422.6,5.3,462,3,'idle'],4:[438.7,11,462,6,'nozzle'],6:[425,6.2,418,0,'idle']}},
+ {kind:'turnout',from:[420.2,1.8],st:{3:[418.2,2.5,418.2,0,'idle']}},
+ {kind:'hazmat',from:[431,26],appear:4,st:{4:[435.6,21.6,462,3,'idle'],5:[450.2,6.6,461,3,'idle'],6:[429.5,27,420,27,'idle']}},
+ {kind:'hazmat',from:[432,28],appear:4,st:{4:[436.8,22.6,462,3,'idle'],5:[449.4,8,461,4,'idle'],6:[430.8,28.2,420,27,'idle']}}
+];
+CREW.forEach(m=>{m.g=buildResponder(THREE,m.kind);m.g.visible=false;scene.add(m.g);m.x=m.from[0];m.z=m.from[1];m.walk=0;m.shown=false;m.appear=m.appear||3;});
+const lead=CREW[1];
+const hlAim=new THREE.Object3D();lead.g.userData.hand.add(hlAim);const hlTip=new THREE.Object3D();hlTip.position.x=.35;hlAim.add(hlTip);
+const nozzleMesh=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,.42,10).rotateZ(Math.PI/2),new THREE.MeshStandardMaterial({color:0x222,metalness:.6,roughness:.4}));nozzleMesh.position.x=.15;hlAim.add(nozzleMesh);
+const nzHand=addNozzle({tip:hlTip,yawObj:hlAim,pitchObj:hlAim,elev:.42,target:new THREE.Vector3(SPILL.x-2,0,SPILL.z+4),r0:.03,r1:.38,spray:180,rise:1.5,foam:true});
+function crewStation(m,ph){let s=null;for(const k in m.st)if(+k<=ph)s=m.st[k];return s;}
+let crewSnap=true;
+function updCrew(dt,arrived){
+  for(const m of CREW){
+    const vis=cur>=m.appear&&(cur>3||arrived||m.appear>3);
+    if(!vis){m.g.visible=false;m.shown=false;continue;}
+    const s=crewStation(m,cur);if(!s)continue;
+    if(!m.shown){m.shown=true;m.g.visible=true;if(crewSnap){m.x=s[0];m.z=s[1];}else{m.x=m.from[0];m.z=m.from[1];}}
+    const dx=s[0]-m.x,dz=s[1]-m.z,d=Math.hypot(dx,dz),sp=m.kind==='hazmat'?1.8:2.2;
+    let face;
+    if(d>.05){const st=Math.min(d,sp*dt);m.x+=dx/d*st;m.z+=dz/d*st;face=Math.atan2(-dz,dx);m.walk=Math.min(1,m.walk+dt*4);}
+    else{face=Math.atan2(-(s[3]-m.z),s[2]-m.x);m.walk=Math.max(0,m.walk-dt*4);}
+    let dy=face-m.g.rotation.y;dy=Math.atan2(Math.sin(dy),Math.cos(dy));m.g.rotation.y+=dy*Math.min(1,dt*6);
+    m.g.position.x=m.x;m.g.position.z=m.z;
+    animateResponder(m.g,T,m.walk,d>.05?'walk':s[4]);
+    if(m.hose&&(d>.05||!hose.visible))layHose(m.x,m.z);
+  }
+  if(!lead.shown)hose.visible=false;
+  crewSnap=false;
+}
+
+/* ---------------- OPERATIONS: mission clock, agent tanks, radio ---------------- */
+// Simulated mission time (s since the alarm). Phases 1-3 are compressed travel; 4-5 run at ×6 so tank use is visible.
+const SIM_START={1:0,2:30,3:125,4:150,5:225};
+const SIM_KEY={1:[0,30,7.5,1],2:[30,125,9,1],3:[125,140,6,1]};   // [t0,t1,duration(real s),rate after]
+const ATTACK_RATE=6, ARRIVAL=140, ICAO=180;
+let simT=0;
+// Rated flows (L/min, illustrative): roof turret 6,000 · bumper turret 1,500 · handline 400 · foam proportioned at 3 %.
+const TANK=[{nm:'بانثر 1',noz:[nzRoof,nzBump,nzHand],rated:[6000,1500,400]},{nm:'بانثر 2',noz:[nz2],rated:[6000]}];
+const W0=12500,F0=1500;
+function fillTanks(i){TANK.forEach(t=>{t.w=W0;t.f=F0;t.ann=false;});if(i===5){TANK[0].w=3200;TANK[0].f=1270;TANK[1].w=9400;TANK[1].f=1430;}if(i>=6){TANK[0].w=0;TANK[0].f=1120;TANK[1].w=2600;TANK[1].f=1190;TANK[0].ann=true;}}
+fillTanks(0);
+const tanksEl=$('#tanks');
+TANK.forEach(t=>{const d=document.createElement('div');d.className='tk';d.innerHTML=`<span class="nm">${t.nm}</span><div class="bars"><div class="b w"><i></i></div><div class="b f"><i></i></div></div><span class="v"></span>`;tanksEl.appendChild(d);t.el=d;t.wi=d.querySelector('.w i');t.fi=d.querySelector('.f i');t.v=d.querySelector('.v');});
+const fmtT=s=>{s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
+const fmtL=v=>Math.round(v).toLocaleString('en-US');
+let opsTick=0;
+function updOps(dt,arrived){
+  // clock
+  const K=SIM_KEY[cur];
+  if(K){simT=phaseT<K[2]?K[0]+(K[1]-K[0])*phaseT/K[2]:K[1]+(phaseT-K[2])*K[3];}
+  else if(cur===4||cur===5)simT+=dt*ATTACK_RATE;
+  // agent use
+  let flow=0;
+  if(cur===4||cur===5){const sdt=dt*ATTACK_RATE;
+    TANK.forEach((t,ti)=>{let q=0;t.noz.forEach((n,k)=>{q+=n.flow*t.rated[k];});flow+=q;const sol=q/60*sdt;t.w=Math.max(0,t.w-sol*.97);t.f=Math.max(0,t.f-sol*.03);
+      if(t.w<=0&&!t.ann){t.ann=true;radio(ti?'إطفاء 2':'إطفاء 1',ti?'الخزان فارغ — نطلب إعادة التعبئة من الصهريج المساند':'خزان الماء فارغ — إطفاء 2 يواصل تغطية الرغوة، ونتجه لإعادة التعبئة');}});}
+  TANK.forEach(t=>{if(t.w<=0)t.noz.forEach(n=>n.want=0);});
+  if((opsTick+=dt)<.1)return;opsTick=0;
+  $('#clk').textContent=fmtT(simT);
+  $('#respFill').style.width=Math.min(100,(cur>=3&&arrived?ARRIVAL:Math.min(simT,ICAO))/ICAO*100)+'%';
+  const ok=cur>3||(cur===3&&arrived);const rt=$('#respTxt');
+  $('#respMark').style.display=ok?'block':'none';$('#respMark').style.left=(ARRIVAL/ICAO*100)+'%';
+  rt.classList.toggle('ok',ok);rt.textContent=ok?`زمن الاستجابة ${fmtT(ARRIVAL)} ✓ ضمن معيار ICAO (3 دقائق)`:'معيار ICAO: الوصول إلى موقع الحادث خلال 3 دقائق';
+  TANK.forEach((t,ti)=>{t.el.classList.toggle('hide',ti===1&&cur<3);t.el.classList.toggle('dry',t.w<=0);t.wi.style.width=(t.w/W0*100)+'%';t.fi.style.width=(t.f/F0*100)+'%';t.v.textContent=fmtL(t.w)+' L';});
+  $('#flowV').textContent=fmtL(flow)+' L/min';
+}
+// radio traffic per phase: [delay s, callsign, message]
+const RADIO={
+ 1:[[.6,'البرج ← الإطفاء','حريق في حظيرة الطائرات 3 مع تسرب براميل مواد خطرة (UN 1203). الرياح 270° بسرعة 12 عقدة'],[3.4,'إطفاء 1','علم. انطلاق الوحدتين 1 و 2']],
+ 2:[[.8,'إطفاء 1 ← البرج','نطلب عبور المدرج 27 باتجاه الحظيرة 3'],[3.2,'البرج','مسموح بالعبور. الحركة الجوية متوقفة على المدرج 27'],[7.5,'إطفاء 1','الدخان مرئي — حريق نشط عند باب الحظيرة']],
+ 3:[[6.3,'إطفاء 1','في الموقع. التمركز عكس الريح على بعد 40 م من الانسكاب'],[9.5,'القائد','المنطقة الساخنة 25 م والدافئة 45 م. إطفاء 2 يتمركز على الجناح الأيسر'],[13,'إطفاء 2','في الموقع، جاهزون للضخ']],
+ 4:[[.6,'القائد','القاذف العلوي: رغوة على البركة. القاذف الأمامي: حافة الانسكاب'],[4.5,'إطفاء 2','تبريد البراميل عند باب الحظيرة'],[7,'المواد الخطرة','الفريق جاهز عند ممر إزالة التلوث']],
+ 5:[[.6,'القائد','الحريق تحت السيطرة. المحافظة على طبقة الرغوة ومراقبة الأبخرة'],[4,'المواد الخطرة','دخول المنطقة الساخنة لإيقاف التسرب من البراميل']]
+};
+const radioEl=$('#radio');let radioTimers=[];
+function radio(who,txt){const el=document.createElement('div');el.className='rm';el.innerHTML=`<b>${who}</b>${txt}`;radioEl.appendChild(el);const all=radioEl.children;for(let k=0;k<all.length;k++)all[k].classList.toggle('old',k<all.length-1);while(radioEl.children.length>3)radioEl.removeChild(radioEl.firstChild);}
+function startRadio(i,seq){radioTimers.forEach(clearTimeout);radioTimers=[];if(!seq)radioEl.innerHTML='';
+  (RADIO[i]||[]).forEach(([d,w,t])=>{const id=later(()=>radio(w,t),d);if(id)radioTimers.push(id);});}
+// audio
+const AUD=window.createScenarioAudio?createScenarioAudio():null;
+$('#snd').onclick=()=>{if(!AUD)return;const on=AUD.toggle();$('#snd').classList.toggle('on',on);$('#sndW').setAttribute('opacity',on?1:.35);};
 
 /* ---------------- STATE / FLOW ---------------- */
 let cur=-1, T=0, phaseT=0;
 let prevSpeed=0, truckX=PH[0].x, fromX=truckX, toX=truckX, moveDur=0, moveT=0, moveEase='inout', speed=0, peakV=1, wheelRot=0;
 const camPos=new THREE.Vector3(), camLook=new THREE.Vector3(), wantPos=new THREE.Vector3(), wantLook=new THREE.Vector3();
 let yawOff=0,pitchOff=0,dragging=false,lastX=0,lastY=0,orbitAng=0;
-let lightsOn=false, jetsMode=false;
+let lightsOn=false, jetsMode=false, t2Snap=true;
 const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 const easeOut=t=>1-Math.pow(1-t,2.2);
 const panel=$('#panel'), chips=$('#chips');
@@ -590,7 +903,11 @@ function go(i){
   lightsOn=!!P.lights; jetsMode=P.jets||false;
   if(i<4){fireLevel=1;smokeLevel=1;}
   if(i>=6){fireLevel=0;smokeLevel=.15;}
-  if(i===5){fireLevel=Math.min(fireLevel,.25);}
+  if(i===5){fireLevel=Math.min(fireLevel,.25);foam=Math.max(foam,.7);}
+  const seq=prev>=0&&i===prev+1;
+  if(!seq){crewSnap=true;t2Snap=true;CREW.forEach(m=>m.shown=false);simT=SIM_START[i]!=null?SIM_START[i]:0;}
+  if(!seq||i<4)fillTanks(i);
+  $('#left').classList.toggle('on',i>=1&&i<=5);
   // UI
   $('#phaseNum').textContent=i===0?'نقطة البداية':'المرحلة '+i;
   $('#phaseName').textContent=P.name;
@@ -598,6 +915,7 @@ function go(i){
   chips.children[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   panel.classList.remove('show');
   clearTimeout(go._t); simTimers.length=0; panelShownAt=-1; if(REC) panel.style.opacity=0;
+  startRadio(i,seq);
   go._t=later(()=>{panel.innerHTML=P.html;panel.classList.toggle('wide',!!P.wide);panel.scrollTop=0;panel.classList.add('show');panelShownAt=T;bindPanel();},(P.alarm?2200:(P.wide?900:550))/1000);
   hsEls.forEach(h=>h.classList.remove('on','hl'));hlPart=-1;
   $('#hud').classList.toggle('on',!!P.hud);
@@ -644,7 +962,8 @@ function drawGauge(kmh){const g=gctx,W=300,cx=150,cy=160,r=118;g.clearRect(0,0,W
 
 /* resize */
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;
-  const narrow=w<760; camera.fov=narrow?(w<h?62:48):42; camera.updateProjectionMatrix(); camShift=narrow?0:(w>1100?.14:.1); baseZoom=(w<h)?1.75:(narrow?1.2:1);}
+  const narrow=w<760; camera.fov=narrow?(w<h?62:48):42; camera.updateProjectionMatrix(); camShift=narrow?0:(w>1100?.14:.1); baseZoom=(w<h)?1.75:(narrow?1.2:1);
+  U_SCALE.value=h*renderer.getPixelRatio()/(2*Math.tan(camera.fov*Math.PI/360));}
 let camShift=.2, baseZoom=1; addEventListener('resize',resize); resize();
 
 /* loop */
@@ -668,20 +987,38 @@ function frame(fixed,skipRender){
   const fl=lightsOn?((Math.sin(T*18)>0)?1:0):0, fr=lightsOn?((Math.sin(T*18+Math.PI)>0)?1:0):0;
   lbBlue[0].material.emissiveIntensity=fl*4;lbBlue[1].material.emissiveIntensity=fr*4;lbCenter.material.emissiveIntensity=lightsOn?(Math.sin(T*9)>0?3:0):0;
   beaconL.intensity=fl*3.5;beaconR.intensity=fr*3.5;
-  // jets
-  const wantRoof=(jetsMode===true)?1:0, wantBump=(jetsMode===true)?1:0;
-  if(jetsMode==='fade'){jetRoof=Math.max(0,jetRoof-dt*.12);jetBump=Math.max(0,jetBump-dt*.2);}
-  else {jetRoof+=(wantRoof-jetRoof)*Math.min(1,dt*(wantRoof?1.2:3));jetBump+=(wantBump-jetBump)*Math.min(1,dt*(wantBump?1.6:3));}
-  if(jetsMode===true && phaseT>1.2) pitch.rotation.z+=(0.3-pitch.rotation.z)*dt*1.5; else if(cur<4) pitch.rotation.z+=(0.05-pitch.rotation.z)*dt*2;
-  if(jetsMode===true && phaseT>2){foam=Math.min(1,foam+dt*.085);fireLevel=Math.max(.2,1-foam*.85);}
-  if(cur===5){foam=Math.min(1,foam+dt*.08);fireLevel=Math.max(0,fireLevel-dt*.1);smokeLevel=Math.max(.3,smokeLevel-dt*.03);}
-  if(cur<4){foam=0;}
-  if(cur>=6){foam=1;}
+  glow1.forEach((g,i)=>g.material.opacity=(i?fr:fl)*.95);
+  // second unit
+  if(cur<3){truck2.visible=false;t2s=0;t2Speed=0;}
+  else{truck2.visible=true;
+    if(cur>3||t2Snap){t2s=T2LEN;t2Speed=0;}
+    else if(phaseT>2.5){const u=Math.min(1,(phaseT-2.5)/T2DUR);const ns=(1-Math.pow(1-u,2))*T2LEN;t2Speed=(ns-t2s)/dt;t2s=ns;}
+    else t2Speed=0;
+    placeTruck2(t2s);t2Wheel-=t2Speed*dt/.74;TP2.wheels.forEach(w=>w.rotation.z=t2Wheel);
+    TP2.body.position.y=Math.abs(t2Speed)>1?Math.sin(T*14+1)*.012+.01:0;
+    const f2=(Math.sin(T*16+1)>0)?1:0;TP2.beacons[0].material.emissiveIntensity=f2*4;TP2.beacons[1].material.emissiveIntensity=(1-f2)*4;glow2[0].material.opacity=f2*.95;glow2[1].material.opacity=(1-f2)*.95;beacon2.intensity=f2*3;}
+  t2Snap=false;
+  updCrew(dt,moveT>=moveDur);
+  // monitors & handline: phase 4 = initial attack, phase 5 = maintain the foam blanket
+  const atk=jetsMode===true, hold=jetsMode==='fade';
+  nzRoof.want=atk?(phaseT>1?1:0):(hold?Math.max(.35,1-phaseT*.08):0);
+  nzBump.want=atk?(phaseT>1.6?1:0):(hold?Math.max(0,.6-phaseT*.1):0);
+  nz2.want=(atk&&phaseT>4)||hold?1:0;
+  nzHand.want=lead.shown&&lead.walk<.1&&((atk&&phaseT>4)||hold)?.9:0;
+  const foamRate=nzRoof.flow*.07+nzBump.flow*.025+nz2.flow*.02+nzHand.flow*.015;
+  if(cur===4||cur===5)foam=Math.min(1,foam+dt*foamRate);
+  if(cur===4)fireLevel=Math.max(.15,1-foam*.9);
+  if(cur===5){fireLevel=Math.max(0,Math.min(fireLevel,.3)-dt*.05);smokeLevel=Math.max(.35,smokeLevel-dt*.04);}
+  if(cur<4)foam=0;
+  if(cur>=6)foam=1;
+  steam=cur>=6?1:Math.min(1,foam*1.1+(atk||hold?.15:0));
+  updOps(dt,moveT>=moveDur);
+  if(AUD&&AUD.on)AUD.update({siren:lightsOn&&cur>=1&&cur<=3&&!(cur===3&&moveT>=moveDur)?1:0,speed:Math.abs(speed),flow:NOZ.reduce((a,n)=>a+n.flow,0)*.5,fire:fireLevel*(cur>=1?1:.4),alarm:cur===1&&phaseT<4,t:T});
   foamMesh.scale.set(.05+foam*.95,.05+foam*.95,1);foamMesh.material.opacity=Math.min(.93,foam*1.4);
   const flick=(2.2+Math.sin(T*13)*.4+Math.sin(T*7.3)*.3);
   fireLight.intensity=flick*fireLevel*2.4; fireLight2.intensity=flick*Math.max(fireLevel,cur>=5?0:.5)*1.6*(cur>=5?fireLevel:1);
   if(window.__flag){const f=window.__flag,a=f.g.attributes.position;for(let i=0;i<a.count;i++){const x=f.base[i*3];a.setZ(i,Math.sin(x*2.2-T*6)*.18*(x+1.5)/3);}a.needsUpdate=true;}
-  updFire(dt); updWater(dt);
+  U_TIME.value=T; updFire(dt); updWater(dt);
   // camera target
   const P=PH[cur]; const c=P.cam;
   if(P.orbit) orbitAng+=dt*P.orbit; else orbitAng*=.96;
