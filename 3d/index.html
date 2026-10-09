@@ -497,18 +497,48 @@ let foamMesh, spillMesh;
   // interior lights (some still on)
   for(let x=HX+8;x<HX+HD;x+=10)for(const z of [-14,0,14]){const l=new THREE.Mesh(new THREE.BoxGeometry(1.4,.15,.4),new THREE.MeshBasicMaterial({color:0xdfe8f0}));l.position.set(x,HH-2.2,z);g.add(l);}
   const hl=new THREE.PointLight(0xdfe8ff,1.4,60,1.5);hl.position.set(HX+25,HH-3,0);g.add(hl);
-  // ---- business jet inside ----
+  // ---- business jet inside (≈20 m long, rear-engined, T-tail); left wing scorched by the fire ----
   const jet=new THREE.Group();jet.position.set(HX+26,0,-2);jet.rotation.y=-Math.PI/2+.25;g.add(jet);
-  const wM=new THREE.MeshStandardMaterial({color:0xe8ecef,roughness:.35,metalness:.35});
+  const wM=new THREE.MeshStandardMaterial({color:0xeef1f3,roughness:.28,metalness:.3});
   const bM=new THREE.MeshStandardMaterial({color:0x2a2622,roughness:.95});
-  const fus=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.0,17,24),wM);fus.rotation.x=Math.PI/2;fus.position.set(0,2.3,0);fus.castShadow=true;jet.add(fus);
-  const nose=new THREE.Mesh(new THREE.SphereGeometry(1.25,24,14,0,Math.PI*2,0,Math.PI/2),wM);nose.rotation.x=Math.PI/2;nose.scale.set(1,2.2,1);nose.position.set(0,2.3,8.5);jet.add(nose);
-  const tc=new THREE.Mesh(new THREE.ConeGeometry(1.0,4,20),wM);tc.rotation.x=-Math.PI/2;tc.position.set(0,2.5,-10.4);jet.add(tc);
-  const fin=new THREE.Mesh(new THREE.BoxGeometry(.25,4.2,3),wM);fin.position.set(0,4.8,-10.2);fin.rotation.x=-.5;jet.add(fin);
-  const ht=new THREE.Mesh(new THREE.BoxGeometry(7,.18,1.6),wM);ht.position.set(0,6.7,-11.4);jet.add(ht);
-  for(const s of [-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(8.5,.22,2.6),s<0?bM:wM);w.position.set(s*4.8,1.6,.5);w.rotation.y=s*.28;w.castShadow=true;jet.add(w);
-    const e=new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,2.6,16),s<0?bM:wM);e.rotation.x=Math.PI/2;e.position.set(s*1.9,2.9,-6.5);jet.add(e);}
-  for(const [x,z] of [[0,6],[-1.5,0],[1.5,0]]){const t=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.25,12),bM);t.rotation.z=Math.PI/2;t.position.set(x,.3,z);jet.add(t);}
+  const stripeM=new THREE.MeshStandardMaterial({color:0x1d3f73,roughness:.35,metalness:.3});
+  const darkG=new THREE.MeshStandardMaterial({color:0x0c1218,roughness:.05,metalness:.8});
+  const greyM=new THREE.MeshStandardMaterial({color:0x8d949b,roughness:.4,metalness:.7});
+  const JM=(geo,m,p)=>{const o=new THREE.Mesh(geo,m);o.castShadow=o.receiveShadow=true;(p||jet).add(o);return o;};
+  const FY=2.15;
+  const fprof=[[0,-10.6],[.22,-10.55],[.55,-9.6],[.85,-8.2],[1.08,-6],[1.2,-3.5],[1.22,2],[1.19,5.6],[1.06,7.4],[.85,8.6],[.55,9.5],[.25,10.05],[0,10.25]].map(q=>new THREE.Vector2(q[0],q[1]));
+  const lathe=(prof,ps,pl,m)=>{const gg=new THREE.LatheGeometry(prof,40,ps,pl);gg.rotateX(Math.PI/2);const o=JM(gg,m);o.position.y=FY;o.scale.set(1,1.06,1);return o;};
+  lathe(fprof,0,Math.PI*2,wM);
+  // windscreen band and cheatlines (lathe slices of the same profile, slightly proud)
+  lathe(fprof.filter(q=>q.y>7.1&&q.y<8.9).map(q=>new THREE.Vector2(q.x+.012,q.y)),Math.PI-.95,1.9,darkG);
+  for(const ph of [Math.PI/2,Math.PI*1.5]){lathe(fprof.map(q=>new THREE.Vector2(q.x+.006,q.y)).filter(q=>q.y>-9&&q.y<9),ph-.06,.12,stripeM);}
+  // cabin windows (oval) on both sides
+  const winG=new THREE.CircleGeometry(.17,16);winG.scale(1,1.35,1);
+  for(const s of [-1,1])for(let z=-3.6;z<5.2;z+=1.05){const w=JM(winG,darkG);w.position.set(s*1.235,FY+.32,z);w.rotation.y=s*Math.PI/2;}
+  // door outline (left, forward)
+  { const d=JM(new THREE.PlaneGeometry(.9,1.7),new THREE.MeshStandardMaterial({color:0xd8dde1,roughness:.4}));d.position.set(-1.236,FY+.05,6.3);d.rotation.y=-Math.PI/2; }
+  // swept, tapered wings with dihedral and winglets
+  function planform(pts,thick,m){const sh=new THREE.Shape();pts.forEach((q,i)=>i?sh.lineTo(q[0],-q[1]):sh.moveTo(q[0],-q[1]));const gg=new THREE.ExtrudeGeometry(sh,{depth:thick,bevelEnabled:true,bevelThickness:thick*.45,bevelSize:thick*.4,bevelSegments:3});gg.translate(0,0,-thick/2);gg.rotateX(-Math.PI/2);return gg;}
+  for(const s of [-1,1]){
+    const wg=planform([[1.0,2.6],[9.6,-2.2],[9.6,-3.2],[1.0,-1.6]],.14,s<0?bM:wM);
+    const w=JM(wg,s<0?bM:wM);w.scale.x=s;w.position.set(0,1.42,.2);w.rotation.z=s*.06;
+    const wl=JM(new THREE.BoxGeometry(.1,1.3,.9),s<0?bM:wM);wl.position.set(s*9.62,2.0,-2.55);wl.rotation.x=-.35;
+    // rear-mounted engine nacelle on a pylon
+    const np=[[0,-1.7],[.32,-1.62],[.5,-1.1],[.56,.2],[.54,1.2],[.5,1.55],[.42,1.6]].map(q=>new THREE.Vector2(q[0],q[1]));
+    const ng=new THREE.LatheGeometry(np,28);ng.rotateX(Math.PI/2);const n=JM(ng,s<0?bM:wM);n.position.set(s*1.95,FY+.55,-6.6);
+    const intake=JM(new THREE.CircleGeometry(.42,24),darkG);intake.position.set(s*1.95,FY+.55,-5.02);
+    const py=JM(new THREE.BoxGeometry(.9,.18,1.8),s<0?bM:wM);py.position.set(s*1.35,FY+.45,-6.7);
+  }
+  // T-tail: swept fin with the stabiliser on top
+  { const sh=new THREE.Shape();[[6.1,0],[10.2,0],[10.9,4.0],[9.2,4.0]].forEach((q,i)=>i?sh.lineTo(q[0],q[1]):sh.moveTo(q[0],q[1]));
+    const fg=new THREE.ExtrudeGeometry(sh,{depth:.2,bevelEnabled:true,bevelThickness:.08,bevelSize:.07,bevelSegments:3});fg.translate(0,0,-.1);fg.rotateY(Math.PI/2);
+    const fin=JM(fg,wM);fin.position.set(0,FY+.85,0);
+    for(const s of [-1,1]){const hs=JM(planform([[.1,-9.0],[3.6,-10.4],[3.6,-11.1],[.1,-10.6]],.1,wM),wM);hs.scale.x=s;hs.position.y=FY+4.85;}
+    const lg=JM(new THREE.BoxGeometry(.06,.6,.9),stripeM);lg.position.set(.13,FY+3.1,-9.6);lg.rotation.x=-.45; }
+  // landing gear
+  const tyreJ=new THREE.CylinderGeometry(.36,.36,.22,18);tyreJ.rotateZ(Math.PI/2);
+  for(const [x,z] of [[-.13,7.6],[.13,7.6],[-1.7,-.6],[-1.95,-.6],[1.7,-.6],[1.95,-.6]]){JM(tyreJ,bM).position.set(x,.36,z);}
+  for(const [x,z] of [[0,7.6],[-1.82,-.6],[1.82,-.6]]){const st=JM(new THREE.CylinderGeometry(.07,.07,1.4,10),greyM);st.position.set(x,1.05,z);}
   // ---- hazmat storage: drums on pallets, IBC totes, toppled forklift ----
   function drumTex(col,dCol,dNum){return canvasTex(256,128,(c,w,h)=>{c.fillStyle=col;c.fillRect(0,0,w,h);c.fillStyle='rgba(0,0,0,.25)';c.fillRect(0,30,w,5);c.fillRect(0,92,w,5);c.save();c.translate(64,64);c.rotate(Math.PI/4);c.fillStyle=dCol;c.fillRect(-22,-22,44,44);c.restore();c.fillStyle=dCol==='#ffffff'?'#111':'#fff';c.font='bold 22px Arial';c.textAlign='center';c.fillText(dNum,64,74);for(let i=0;i<30;i++){c.fillStyle='rgba(80,40,10,.3)';c.fillRect(Math.random()*w,Math.random()*h,3,8);}});}
   const drumG=new THREE.CylinderGeometry(.3,.3,.9,16);
