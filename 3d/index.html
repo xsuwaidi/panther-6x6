@@ -268,7 +268,7 @@ const PH = [
    <div class="stat" style="--c:var(--teal);animation-delay:.2s"><b>30 م</b><span>القاذف الأول (السفلي): مدى يصل إلى 30 متر</span></div>
    <div class="stat" style="--c:var(--red);animation-delay:.35s"><b>70-90 م</b><span>القاذف الثاني (العلوي): مدى يقارب 70-90 متر حسب الضغط والإعداد</span></div>
   </div>
-  <p class="note">معدل التدفق يتأثر بإعداد المضخة والضغط وخطوط التصريف. مضخة N80: 8,000 ل/د عند 10 بار (حتى 9,000 ل/د عند 12 بار)، خلط الرغوة FIXMIX بنسب 1/3/6%. لوحة العمليات تستخدم توزيعاً تقديرياً ضمن قدرة المضخة (القاذف العلوي 6,000 ل/د، الأمامي 1,500 ل/د، الخط اليدوي 400 ل/د، رغوة 3%) مع ضغط الزمن ×6 أثناء الهجوم.</p>`},
+  <p class="note">معدل التدفق يتأثر بإعداد المضخة والضغط وخطوط التصريف. وفق النشرة الفنية: مضخة N80 بقدرة 9,000 ل/د عند 14 بار، وخلط رغوة FIXMIX 2.0 بنسب 3/6/9%، والذراع العلوي STINGER 54 بقاذف RM65 حتى 6,000 ل/د في وضع التخزين (3,800 ل/د والذراع مرفوع، و1,000 ل/د لأداة الاختراق). تدفق القاذف الأمامي RM15 C (1,500 ل/د) والخط اليدوي (400 ل/د) تقديريان مع ضغط الزمن ×6 أثناء الهجوم.</p>`},
  {name:'السيطرة ومجالات الاستخدام', x:418, move:0, cam:{o:[-10,27,40],l:[26,1,-2]}, lights:true, jets:'fade',
   html:`<p class="scn">إخماد الحريق واحتواء التسرب تحت طبقة الرغوة</p><p class="eyebrow">المرحلة 5 — مجالات الاستخدام</p>
   <h2 class="ttl">السيطرة على الحادث</h2><div class="bar"></div>
@@ -859,7 +859,7 @@ const SIM_START={1:0,2:30,3:125,4:150,5:225};
 const SIM_KEY={1:[0,30,7.5,1],2:[30,125,9,1],3:[125,140,6,1]};   // [t0,t1,duration(real s),rate after]
 const ATTACK_RATE=6, ARRIVAL=140, ICAO=180;
 let simT=0;
-// Rated flows (L/min, illustrative): roof turret 6,000 · bumper turret 1,500 · handline 400 · foam proportioned at 3 %.
+// Flows (L/min): HRET RM65 6,000 in stowage (Rosenbauer datasheet) · bumper RM15 C 1,500 and handline 400 (estimates) · foam at 3 % (FIXMIX 2.0).
 const TANK=[{nm:'بانثر 1',noz:[nzRoof,nzBump,nzHand],rated:[6000,1500,400]},{nm:'بانثر 2',noz:[nz2],rated:[6000]}];
 const W0=12500,F0=1500;
 function fillTanks(i){TANK.forEach(t=>{t.w=W0;t.f=F0;t.ann=false;});if(i===5){TANK[0].w=3200;TANK[0].f=1270;TANK[1].w=9400;TANK[1].f=1430;}if(i>=6){TANK[0].w=0;TANK[0].f=1120;TANK[1].w=2600;TANK[1].f=1190;TANK[0].ann=true;}}

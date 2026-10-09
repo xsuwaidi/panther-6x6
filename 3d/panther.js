@@ -1,5 +1,6 @@
-/* Rosenbauer Panther 6x6 — procedural model v2 (x = forward, y = up, z = right).
-   Built from field photos; L 11.5 m · W 3 m · H ~4 m. */
+/* Rosenbauer Panther 6x6 HRET — procedural model v3 (x = forward, y = up, z = right).
+   Built from field photos and the Rosenbauer datasheet: L 11.71 m · W 3.0 m · H 3.75 m, wheelbase 4.8 m,
+   STINGER 54 HRET with RM65 monitor, RM15 C bumper turret. */
 (function (root) {
 'use strict';
 function buildPanther(THREE, opts) {
@@ -69,7 +70,7 @@ function buildPanther(THREE, opts) {
   treadTex.wrapS = THREE.RepeatWrapping; treadTex.repeat.set(4, 1);
 
 
-  const W = 2.96, HW = W / 2, CW = 2.8, CHW = CW / 2, XR = -5.75, XB = 1.85, XC = 1.95;
+  const W = 2.96, HW = W / 2, CW = 2.8, CHW = CW / 2, XR = -5.47, XB = 1.85, XC = 1.95;
   const XF = 2.55, XT = [XF - 4.8, XF - 6.4], R = .74, AR = .93;   // axles (4,800 mm wheelbase per Rosenbauer data), tyre radius, arch radius
   Object.assign(M, {
     dash: new THREE.MeshStandardMaterial({ color: 0x3b4047, roughness: .7, metalness: .2, name: 'dash' }),
@@ -257,20 +258,30 @@ function buildPanther(THREE, opts) {
   cyl(.055, .085, .44, M.black, .26, .06, 0, 'x', bt); cyl(.07, .07, .06, M.alu, .47, .06, 0, 'x', bt);
   const bumpTip = new THREE.Object3D(); bumpTip.position.set(.52, .06, 0); bt.add(bumpTip);
 
-  /* ---------------- roof turret (articulated boom on the cab roof) ---------------- */
-  const turret = new THREE.Group(); turret.name = 'roof_turret'; turret.position.set(3.55, 3.55, 0); cabG.add(turret);
-  cyl(.36, .42, .2, M.satin, 0, .1, 0, null, turret, 32);
-  const yawG = new THREE.Group(); yawG.position.y = .2; turret.add(yawG);
-  rbox(.62, .34, .56, .1, M.red, 0, .17, 0, yawG);
-  cyl(.12, .12, .62, M.satin, .1, .32, 0, 'z', yawG);
-  const pitch = new THREE.Group(); pitch.position.set(.12, .34, 0); yawG.add(pitch);
-  rbox(3.0, .22, .22, .08, M.black, 1.45, 0, 0, pitch);
-  rbox(2.5, .08, .08, .03, M.alu, 1.2, -.19, 0, pitch);
-  rbox(.34, .32, .32, .08, M.red, 2.95, 0, 0, pitch);
-  cyl(.095, .17, .62, M.black, 3.36, 0, 0, 'x', pitch, 28); cyl(.135, .135, .12, M.red, 3.12, 0, 0, 'x', pitch, 28);
-  cyl(.1, .1, .05, M.alu, 3.68, 0, 0, 'x', pitch, 28);
-  rbox(.18, .14, .18, .05, M.satin, 2.88, .22, 0, pitch); box(.02, .08, .12, M.led, 2.98, .22, 0, pitch);
-  const roofTip = new THREE.Object3D(); roofTip.position.x = 3.72; pitch.add(roofTip);
+  /* ---------------- HRET: Rosenbauer STINGER 54 boom (stowed over the cab) with RM65 monitor + piercing tool ---------------- */
+  const chevB = tex(512, 64, (g, w, h) => { g.fillStyle = '#0d0e10'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2c21a'; for (let x = 20; x < w; x += 64) { g.beginPath(); g.moveTo(x, 6); g.lineTo(x + 22, 6); g.lineTo(x + 46, h / 2); g.lineTo(x + 22, h - 6); g.lineTo(x, h - 6); g.lineTo(x + 24, h / 2); g.closePath(); g.fill(); } });
+  const turret = new THREE.Group(); turret.name = 'hret_stinger'; turret.position.set(2.35, 3.55, 0); cabG.add(turret);
+  cyl(.4, .44, .16, M.satin, 0, .08, 0, null, turret, 32);
+  rbox(.72, .34, .62, .1, M.red, 0, .32, 0, turret);
+  const boom = new THREE.Group(); boom.name = 'boom'; boom.position.set(.1, .38, 0); boom.rotation.z = -.025; turret.add(boom);
+  cyl(.13, .13, .7, M.satin, 0, 0, 0, 'z', boom);                                            // hinge
+  rbox(3.95, .26, .26, .06, M.black, 1.95, 0, 0, boom);                                     // boom section
+  for (const s of [-1, 1]) decal(chevB, 1.1, .14, 3.3, 0, s * .135, s < 0 ? Math.PI : 0, boom);
+  rod(new THREE.Vector3(.3, -.2, 0), new THREE.Vector3(1.5, -.16, 0), .06, M.alu, boom);     // lift cylinder
+  rod(new THREE.Vector3(.2, .16, .08), new THREE.Vector3(3.8, .16, .08), .035, M.satin, boom); // supply line
+  rbox(.16, .2, .4, .04, M.matte, 1.95, -.2, 0, cabG).position.set(4.15, 3.62, 0);           // boom rest on the cab roof
+  // tip head: monitor yaw -> monitor elevation -> RM65 nozzle; piercing tool and camera/light on the head
+  const head = new THREE.Group(); head.position.set(4.0, 0, 0); boom.add(head);
+  rbox(.42, .38, .38, .08, M.red, 0, 0, 0, head);
+  const pierce = new THREE.Group(); pierce.position.set(.05, -.2, 0); pierce.rotation.z = -1.15; head.add(pierce);
+  cyl(.06, .06, .5, M.satin, .25, 0, 0, 'x', pierce, 14); cyl(0, .05, .32, M.alu, .66, 0, 0, null, pierce, 14).rotation.z = -Math.PI / 2;
+  rbox(.16, .12, .2, .04, M.satin, -.05, .26, 0, head); box(.02, .07, .14, M.led, .04, .26, 0, head);
+  const yawG = new THREE.Group(); yawG.position.set(.22, .05, 0); head.add(yawG);
+  cyl(.1, .1, .1, M.satin, 0, 0, 0, null, yawG, 20);
+  const pitch = new THREE.Group(); pitch.position.set(.04, .02, 0); yawG.add(pitch);
+  cyl(.1, .14, .16, M.red, .1, 0, 0, 'x', pitch, 24);
+  cyl(.085, .14, .5, M.black, .42, 0, 0, 'x', pitch, 28); cyl(.09, .09, .05, M.alu, .69, 0, 0, 'x', pitch, 28);
+  const roofTip = new THREE.Object3D(); roofTip.position.x = .72; pitch.add(roofTip);
   pitch.rotation.z = -.02;
 
   /* ---------------- wheels: big off-road tyres with block tread ---------------- */
@@ -313,7 +324,7 @@ function buildPanther(THREE, opts) {
   }
 
   root3.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  Object.assign(parts, { body, cab: cabG, wheels, turretYaw: yawG, turretPitch: pitch, roofTip, bumperTurret: bt, bumpTip, materials: M });
+  Object.assign(parts, { body, cab: cabG, wheels, turretYaw: yawG, turretPitch: pitch, hretBoom: boom, roofTip, bumperTurret: bt, bumpTip, materials: M });
   root3.userData.parts = parts;
   return root3;
 }
