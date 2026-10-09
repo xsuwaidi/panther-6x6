@@ -70,7 +70,7 @@ function buildPanther(THREE, opts) {
 
 
   const W = 2.96, HW = W / 2, CW = 2.8, CHW = CW / 2, XR = -5.75, XB = 1.85, XC = 1.95;
-  const XF = 2.55, XT = [-2.75, -4.35], R = .74, AR = .93;   // axles, tyre radius, arch radius
+  const XF = 2.55, XT = [XF - 4.8, XF - 6.4], R = .74, AR = .93;   // axles (4,800 mm wheelbase per Rosenbauer data), tyre radius, arch radius
   Object.assign(M, {
     dash: new THREE.MeshStandardMaterial({ color: 0x3b4047, roughness: .7, metalness: .2, name: 'dash' }),
     screen: new THREE.MeshStandardMaterial({ color: 0x0a1420, emissive: 0x3f8fd8, emissiveIntensity: .9, roughness: .2, name: 'screen' }),
@@ -104,7 +104,7 @@ function buildPanther(THREE, opts) {
   const skirtPts = [[XR, 1.64], [XR, 1.0], [XT[1] - Math.sqrt(AR * AR - (1 - R) * (1 - R)), 1.0],
     ...arcPts(XT[1], R, AR, Math.PI - Math.asin((1 - R) / AR), am, 10).slice(1),
     ...arcPts(XT[0], R, AR, Math.PI - am, Math.asin((1 - R) / AR), 10).slice(1),
-    [-1.75, .72], [1.45, .72], [1.62, 1.0], [XB, 1.0], [XB, 1.64]];
+    [XT[0] + .9, .72], [1.45, .72], [1.62, 1.0], [XB, 1.0], [XB, 1.64]];
   const skirt = add(sideExtrude(skirtPts, W, M.red, .04, 3)); skirt.name = 'body_skirt';
   // black fender liners in the arches
   for (const x of XT) for (const s of [-1, 1]) { const t = mesh(new THREE.TorusGeometry(AR - .02, .045, 6, 24, Math.PI * .86), M.satin, x, R, s * (HW - .02)); t.rotation.z = Math.PI * .07; }
@@ -116,7 +116,7 @@ function buildPanther(THREE, opts) {
   rbox(2.3, .42, 1.25, .08, M.satin, -3.4, 3.62, 0);              // hose / equipment box
   rbox(1.0, .3, .7, .06, M.red, -1.0, 3.56, -.45); cyl(.24, .24, .08, M.alu, -1.0, 3.74, -.45);  // tank manhole
   // compartments with roller shutters
-  const comps = [[.22, 1.6, .86, 2.92], [-1.68, .02, .86, 2.92]];
+  const comps = [[.3, 1.65, .86, 2.92], [-1.15, .15, .86, 2.92]];
   const shutterMat = new THREE.MeshStandardMaterial({ map: shutterTex, bumpMap: shutterBump, bumpScale: .02, roughness: .38, metalness: .8, name: 'roller_shutter' });
   for (const s of [-1, 1]) {
     const zf = s * (HW + .012);
@@ -128,11 +128,11 @@ function buildPanther(THREE, opts) {
       rbox(.36, .05, .06, .02, M.alu, (x0 + x1) / 2, y0 + .1, zf + s * .02);
     }
     // panel seams, crease highlight, reflective band
-    for (const x of [-2.0, -3.7]) box(.012, 1.25, .01, M.satin, x, 2.28, s * (1.44 + .006));
+    for (const x of [-1.5, -3.2]) box(.012, 1.25, .01, M.satin, x, 2.28, s * (1.44 + .006));
     box(XB - XR - .4, .025, .01, M.white, (XB + XR) / 2 + .1, 1.66, s * (1.44 + .008));
     box(XB - XR - 1.0, .05, .01, M.reflR, (XB + XR) / 2 - .2, 1.12, s * (HW + .01));
     decal(wordTex('rosenbauer', s < 0, { font: 'bold 118px Arial, sans-serif' }), 1.9, .36, -3.3, 2.35, s * (1.44 + .02), s < 0 ? Math.PI : 0);
-    for (const x of [-5.3, -1.85, 1.65]) rbox(.12, .06, .04, .02, M.amber, x, 1.2, s * (HW + .015));
+    for (const x of [-5.3, -1.0, 1.7]) rbox(.12, .06, .04, .02, M.amber, x, 1.2, s * (HW + .015));
     for (const x of [-4.85, 1.5]) { rbox(.42, .12, .06, .03, M.satin, x, 2.86, s * (1.44 + .02)); box(.36, .07, .02, M.led, x, 2.86, s * (1.44 + .055)); }
     box(.03, .45, .55, M.rubber, -5.3, .62, s * 1.18);
   }
