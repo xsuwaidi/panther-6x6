@@ -49,7 +49,7 @@ def mat(name, color, metal=0.0, rough=0.4, coat=0.0, coat_rough=0.03, emit=None,
     return m
 
 M = {
- 'red':    mat('paint_red', 0xb80a18, metal=0.15, rough=0.28, coat=1.0),
+ 'red':    mat('paint_red', 0x9c0612, metal=0.15, rough=0.28, coat=1.0),
  'black':  mat('gloss_black', 0x050607, metal=0.2, rough=0.22, coat=1.0),
  'satin':  mat('satin_black', 0x111214, metal=0.2, rough=0.5),
  'matte':  mat('matte_black', 0x0b0b0c, rough=0.85),
@@ -88,9 +88,9 @@ def shutter_mat():
     nt = m.node_tree; b = nt.nodes.get('Principled BSDF')
     tc = nt.nodes.new('ShaderNodeTexCoord')
     wv = nt.nodes.new('ShaderNodeTexWave'); wv.wave_type = 'BANDS'; wv.bands_direction = 'Z'; wv.inputs['Scale'].default_value = 40
-    bp = nt.nodes.new('ShaderNodeBump'); bp.inputs['Strength'].default_value = 0.35
+    bp = nt.nodes.new('ShaderNodeBump'); bp.inputs['Strength'].default_value = 0.8
     nt.links.new(tc.outputs['Object'], wv.inputs['Vector']); nt.links.new(wv.outputs['Fac'], bp.inputs['Height']); nt.links.new(bp.outputs['Normal'], b.inputs['Normal'])
-    setin(b, 'Base Color', lin(0x8a9098)); setin(b, 'Metallic', 0.85); setin(b, 'Roughness', 0.35); return m
+    setin(b, 'Base Color', lin(0x5f656c)); setin(b, 'Metallic', 0.9); setin(b, 'Roughness', 0.42); return m
 M['shutter'] = shutter_mat()
 
 # ---------------------------------------------------------------- mesh helpers
@@ -217,8 +217,8 @@ for s in (-1, 1):
     side_extrude('armour_door_%d' % s, [(3.66, .72), (4.85, .72), (4.85, 1.0), (4.55, 1.58), (3.66, 1.58)], .1, M['red'], .03, 3, zc=s * (CHW + .03))
     side_extrude('armour_rear_%d' % s, [(XCAB + .06, .72), (3.48, .72), (3.48, 1.56), (2.75, 1.56), (XCAB + .06, 1.15)], .1, M['red'], .03, 3, zc=s * (CHW + .03))
     rbox('door_handle', .17, .3, .05, M['satin'], 4.2, 1.22, s * (CHW + .085), .02)
-    text('panther_%d' % s, 'PANTHER', .2, M['white'], P(4.45, 1.82, s * (CHW + .05)), (math.radians(90), 0, 0 if s > 0 else math.radians(180)), italic=True)
-    rbox('panther_bar', .42, .035, .005, M['white'], 3.82, 1.82, s * (CHW + .05), 0)
+    text('panther_%d' % s, 'PANTHER', .2, M['white'], P(4.12, 1.86, s * (CHW + .05)), (math.radians(90), 0, 0 if s > 0 else math.radians(180)), italic=True)
+    rbox('panther_bar', .9, .03, .005, M['white'], 4.12, 1.72, s * (CHW + .05), 0)
     rbox('step1', .85, .05, .34, M['alu'], 4.2, .42, s * (CHW - .05), .015)
     rbox('step2', .85, .05, .3, M['alu'], 4.2, .7, s * (CHW - .02), .015)
     tube('grab', [P(3.7, 1.5, s * (CHW - .18)), P(3.7, 2.8, s * (CHW - .18))], .022, M['orange'])
@@ -311,7 +311,7 @@ bm = bmesh.new(); bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=60)
 me = bpy.data.meshes.new('ground'); bm.to_mesh(me); bm.free(); g = bpy.data.objects.new('ground', me); ENV.objects.link(g)
 gm = bpy.data.materials.new('concrete'); gm.use_nodes = True; nt = gm.node_tree; b = nt.nodes.get('Principled BSDF')
 nz = nt.nodes.new('ShaderNodeTexNoise'); nz.inputs['Scale'].default_value = 18; nz.inputs['Detail'].default_value = 10
-cr = nt.nodes.new('ShaderNodeValToRGB'); cr.color_ramp.elements[0].color = lin(0x6f6e6a); cr.color_ramp.elements[1].color = lin(0x9b9a95)
+cr = nt.nodes.new('ShaderNodeValToRGB'); cr.color_ramp.elements[0].color = lin(0x4a4946); cr.color_ramp.elements[1].color = lin(0x6c6b67)
 bp = nt.nodes.new('ShaderNodeBump'); bp.inputs['Strength'].default_value = .15
 nt.links.new(nz.outputs['Fac'], cr.inputs['Fac']); nt.links.new(cr.outputs['Color'], b.inputs['Base Color']); nt.links.new(nz.outputs['Fac'], bp.inputs['Height']); nt.links.new(bp.outputs['Normal'], b.inputs['Normal'])
 setin(b, 'Roughness', .75); me.materials.append(gm)
@@ -330,11 +330,11 @@ try:
         except Exception: continue
     try: sky.sun_elevation = math.radians(38); sky.sun_rotation = math.radians(135)
     except Exception: pass
-    wn.links.new(sky.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.35; sky_ok = True
+    wn.links.new(sky.outputs['Color'], bg.inputs['Color']); bg.inputs['Strength'].default_value = 0.22; sky_ok = True
 except Exception as ex:
     log('sky fallback', ex)
 if not sky_ok: bg.inputs['Color'].default_value = (0.45, 0.62, 0.95, 1); bg.inputs['Strength'].default_value = 1.0
-sun_d = bpy.data.lights.new('Sun', 'SUN'); sun_d.energy = 4.5; sun_d.angle = math.radians(1.5)
+sun_d = bpy.data.lights.new('Sun', 'SUN'); sun_d.energy = 3.2; sun_d.angle = math.radians(1.5)
 sun = bpy.data.objects.new('Sun', sun_d); ENV.objects.link(sun); sun.rotation_euler = (math.radians(50), 0, math.radians(135))
 fill_d = bpy.data.lights.new('Fill', 'AREA'); fill_d.energy = 1500; fill_d.size = 8
 fill = bpy.data.objects.new('Fill', fill_d); ENV.objects.link(fill); fill.location = (14, 10, 8); fill.rotation_euler = (math.radians(60), 0, math.radians(125))
@@ -366,6 +366,7 @@ except Exception as ex:
 sc.cycles.samples = 128 if sc.cycles.device == 'GPU' else 48
 sc.cycles.use_denoising = True
 sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 1920, 1080, 100
+sc.view_settings.exposure = -0.35
 try: sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
 except Exception: pass
 sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 92
