@@ -240,7 +240,7 @@ for s in (-1, 1):
 
 # ---------------------------------------------------------------- front module
 side_extrude('cowl', [(5.3, .98), (6.0, .98), (6.03, 1.2), (5.78, 1.38), (5.3, 1.38)], CW - .06, M['black'], .05, 4)
-text('logo_front', 'rosenbauer', .11, M['white'], P(6.045, 1.1, -.75), (math.radians(90), 0, math.radians(90)))
+text('logo_front', 'rosenbauer', .1, M['white'], P(6.045, 1.12, -.42), (math.radians(90), 0, math.radians(90)))
 side_extrude('red_band', [(5.42, .76), (6.1, .76), (6.13, .98), (5.42, .98)], 1.95, M['red'], .04, 3)
 side_extrude('lower_bumper', [(5.45, .36), (6.02, .36), (6.12, .48), (6.12, .76), (5.45, .76)], 2.25, M['black'], .05, 4)
 for i in range(4): rbox('grille', .03, .03, 1.1, M['matte'], 6.13, .48 + i * .07, 0, .01)
@@ -367,8 +367,11 @@ sc.cycles.samples = 128 if sc.cycles.device == 'GPU' else 48
 sc.cycles.use_denoising = True
 sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 1920, 1080, 100
 sc.view_settings.exposure = -0.35
-try: sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'AgX - Medium High Contrast'
+try: sc.view_settings.view_transform = 'AgX'
 except Exception: pass
+for lk in ('AgX - Punchy', 'Punchy', 'AgX - Medium High Contrast', 'Medium High Contrast'):
+    try: sc.view_settings.look = lk; break
+    except Exception: continue
 sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 92
 
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'panther_6x6.blend'))
