@@ -84,11 +84,11 @@ def firefighter(x, y, yaw, pose, suit, tag):
         hip = V((0, s * .1, .95)); kn = V((k[0], s * .115, k[2])); an = V((a[0], s * .12, a[2]))
         seg(root, 'thigh', hip, kn, .105, .082, legm); seg(root, 'shin', kn, an, .08, .068, legm)
         band(root, kn, an, .55, .084, FM['refl']); band(root, kn, an, .8, .075, FM['refl'])
-        box(root, 'boot', an + V(.06, 0, -.01), (.3, .115, .2), FM['boot'], .035)
+        box(root, 'boot', an + V((.06, 0, -.01)), (.3, .115, .2), FM['boot'], .035)
         # arms
         e, h = P_['arms'][0 if s > 0 else 1]
         sh = V((0, s * .25, 1.48)); el = V((e[0], s * (.26 + e[1]), e[2])); ha = V((h[0], s * (.22 + h[1] * (1 if pose != 'hose' else (1 if s > 0 else -1))), h[2]))
-        if pose == 'hose': ha = V(h[0], (.07 if s > 0 else -.07) + (0.0), h[2])
+        if pose == 'hose': ha = V((h[0], .07 if s > 0 else -.07, h[2]))
         seg(root, 'upper_arm', sh, el, .075, .066, body); seg(root, 'forearm', el, ha, .066, .052, body)
         band(root, el, ha, .5, .068, FM['refl'], .04); ball(root, 'glove', ha, .06, FM['glove'], (1.2, 1, 1))
     # SCBA
