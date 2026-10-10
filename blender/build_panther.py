@@ -164,25 +164,36 @@ def text(name, body, size, m, loc, rot, extrude=0.004, italic=False):
     ob = link(bpy.data.objects.new(name, cu)); ob.location = loc; ob.rotation_euler = rot; cu.materials.append(m); return ob
 
 W, HW, CW, CHW, XR, XCAB = 2.96, 1.48, 2.8, 1.4, -5.75, 2.05
+AXLES = [3.35, -1.25, -2.85]  # per GA drawing: ~4.5 m wheelbase, ~1.6 m tandem
+M['grey'] = mat('body_grey', 0x34383e, metal=0.35, rough=0.32, coat=0.6)
 
 # ---------------------------------------------------------------- body
 side_extrude('body_shell', [(XR, .98), (XCAB - .05, .98), (XCAB - .05, 3.0), ('q', (XCAB - .1, 3.36), (XCAB - .5, 3.4)), (XR + .3, 3.4), ('q', (XR, 3.4), (XR, 3.1))], W, M['red'], .1, 6)
+rbox('lower_grey', XCAB - XR - .05, 1.24, W + .02, M['grey'], (XCAB + XR) / 2 - .03, 1.6, 0, .08)
 rbox('skirt', XCAB - XR - .1, .28, W + .03, M['satin'], (XCAB + XR) / 2 - .05, 1.0)
 rbox('chassis', 11.0, .34, 1.1, M['matte'], -.1, .78)
-for i, x in enumerate([3.35, -2.45, -4.05]): cyl('axle%d' % i, .17, 2.25, M['satin'], P(x, .74), 'Y')
+for i, x in enumerate(AXLES): cyl('axle%d' % i, .17, 2.25, M['satin'], P(x, .74), 'Y')
 for s in (-1, 1):
-    zf = s * (HW + .006)
-    for k, (x0, x1, y0, y1) in enumerate([(1.0, 1.85, 1.2, 3.1), (-.45, .8, 1.2, 3.1), (-5.48, -4.92, 1.72, 3.1)]):
+    zf = s * (HW + .016)
+    for k, (x0, x1, y0, y1) in enumerate([(1.0, 1.85, 1.15, 3.1), (-.35, .8, 1.15, 2.12), (-3.6, -.6, 1.72, 2.12), (-5.5, -3.95, 1.15, 2.12)]):
         rbox('shutter_%d_%d' % (k, s), x1 - x0, y1 - y0, .02, M['shutter'], (x0 + x1) / 2, (y0 + y1) / 2, zf, 0.004)
         for (w, h, xx, yy) in [(x1 - x0 + .1, .05, (x0 + x1) / 2, y1 + .02), (x1 - x0 + .1, .05, (x0 + x1) / 2, y0 - .02), (.05, y1 - y0 + .1, x0 - .02, (y0 + y1) / 2), (.05, y1 - y0 + .1, x1 + .02, (y0 + y1) / 2)]:
             rbox('frame', w, h, .05, M['satin'], xx, yy, zf, .015)
         rbox('handle', .36, .05, .05, M['alu'], (x0 + x1) / 2, y0 + .1, zf + s * .02, .015)
-    rbox('contour_%d' % s, XCAB - XR - .4, .05, .01, M['reflr'], (XCAB + XR) / 2 + .1, 1.2, s * (HW + .02), 0)
-    rbox('pinstripe_%d' % s, XCAB - XR - .4, .03, .01, M['white'], (XCAB + XR) / 2 + .1, 1.42, s * (HW + .02), 0)
-    for x in (-5.2, -2.6, .2): rbox('marker', .12, .06, .04, M['amber'], x, 1.12, s * (HW + .02), .015)
+    rbox('contour_%d' % s, XCAB - XR - .1, .05, .01, M['alu'], (XCAB + XR) / 2, 2.25, s * (HW + .02), 0)
+    rbox('pinstripe_%d' % s, XCAB - XR - .1, .06, .01, M['alu'], (XCAB + XR) / 2, 1.62, s * (HW + .03), 0)
+    for x in (-5.2, -4.2, .2): rbox('marker', .12, .06, .04, M['amber'], x, 1.12, s * (HW + .02), .015)
     for x in (-5.3, 1.6): rbox('worklight', .4, .1, .05, M['led'], x, 3.27, s * (HW + .03), .02)
-    side_extrude('fender_%d' % s, [(-4.95, 1.02), (-1.55, 1.02), ('q', (-1.6, 1.62), (-1.95, 1.62)), (-4.6, 1.62), ('q', (-4.95, 1.62), (-4.95, 1.3))], .14, M['satin'], .02, 3, zc=s * (HW - .03))
-    text('rosenbauer_side_%d' % s, 'rosenbauer', .26, M['white'], P(-4.1, 1.28, s * (HW + .025)), (math.radians(90), 0, 0 if s > 0 else math.radians(180)))
+    side_extrude('fender_%d' % s, [(-3.75, 1.02), (-.35, 1.02), ('q', (-.4, 1.66), (-.75, 1.66)), (-3.4, 1.66), ('q', (-3.75, 1.66), (-3.75, 1.3))], .16, M['satin'], .02, 3, zc=s * (HW - .03))
+    rot = (math.radians(90), 0, 0 if s > 0 else math.radians(180))
+    if s < 0: text('panther6x6_side', 'PANTHER 6x6', .5, M['white'], P(-1.5, 2.72, s * (HW + .03)), rot, extrude=.006)
+    else:
+        text('rosenbauer_side', 'rosenbauer', .55, M['white'], P(-2.2, 2.72, s * (HW + .03)), rot, extrude=.006)
+        rbox('rosen_mark', .42, .42, .01, M['white'], -4.05, 2.74, s * (HW + .03), .08)
+        rbox('rosen_bar', 4.2, .05, .01, M['white'], -2.4, 2.38, s * (HW + .03), 0)
+    # rear-top cooling louvres
+    rbox('louvre_panel_%d' % s, 1.1, .8, .02, M['matte'], -4.75, 2.85, s * (HW + .01), .01)
+    for j in range(7): rbox('louvre', .9, .04, .03, M['satin'], -4.75, 2.55 + j * .1, s * (HW + .025), .005, rot=(0, math.radians(-12) * s, 0))
 # roof rails, walkway, boxes
 for s in (-1, 1):
     zz = s * (HW - .22)
@@ -200,6 +211,7 @@ for s in (-1, 1):
     rbox('tail', .03, .2, .22, M['tail'], XR - .23, 1.18, s * 1.1, .01)
     rbox('indicator', .03, .12, .22, M['amber'], XR - .23, 1.4, s * 1.1, .01)
     rbox('reverse', .03, .1, .22, M['led'], XR - .23, 1.53, s * 1.1, .01)
+for s in (-1, 1): rbox('rear_chev_%d' % s, .02, 1.5, .28, M['chev'], XR - .06, 2.1, s * 1.32, 0)
 rbox('rear_bumper', .28, .3, W, M['satin'], XR - .12, .82, 0, .05)
 
 # ---------------------------------------------------------------- cab
@@ -270,17 +282,16 @@ for s in (-1, 1):
     COL.objects.link(t); finish(t, M['red'])
 
 # ---------------------------------------------------------------- roof turret (HRET boom)
-cyl('turret_base', .4, .2, M['satin'], P(4.05, 3.52), 'Z', 32)
-rbox('turret_body', .62, .34, .56, M['red'], 4.05, 3.79, 0, .08)
-boom_e = bpy.data.objects.new('boom', None); COL.objects.link(boom_e); boom_e.location = P(4.17, 3.96); boom_e.rotation_euler = (0, math.radians(2), 0)
-b1 = rbox('boom_arm', 3.0, .22, .22, M['black'], 1.45, 0, 0, .06); b1.parent = boom_e; b1.location = Vector((1.45, 0, 0))
-b2 = rbox('boom_rod', 2.5, .08, .08, M['alu'], 1.2, -.19, 0, .02); b2.parent = boom_e; b2.location = Vector((1.2, 0, -.19))
-b3 = rbox('boom_knuckle', .34, .32, .32, M['red'], 2.95, 0, 0, .06); b3.parent = boom_e; b3.location = Vector((2.95, 0, 0))
-b4 = cyl('boom_nozzle', .17, .62, M['black'], Vector((3.36, 0, 0)), 'X', 32, r2=.095); b4.parent = boom_e
+cyl('rm_base', .3, .14, M['satin'], P(4.45, 3.5), 'Z', 32)
+rbox('rm_body', .52, .36, .48, M['red'], 4.45, 3.73, 0, .08)
+cyl('rm_barrel', .12, 1.05, M['black'], P(5.0, 3.86), 'X', 32, r2=.09)
+cyl('rm_tip', .15, .26, M['red'], P(5.62, 3.86), 'X', 32, r2=.11, bevel=.02)
+cyl('rm_cam', .1, .16, M['black'], P(4.45, 4.0), 'Z', 24)
+cyl('rm_cam_lens', .05, .04, M['lens'], P(4.55, 4.0), 'X', 16)
 
 # ---------------------------------------------------------------- wheels
 R, TW = .75, .64
-for i, x in enumerate([3.35, -2.45, -4.05]):
+for i, x in enumerate(AXLES):
     for s in (-1, 1):
         c = P(x, R, s * 1.17)
         t = cyl('tyre_%d_%d' % (i, s), R, TW, M['rubber'], c, 'Y', 64, bevel=.14); t.modifiers['Bevel'].segments = 8
