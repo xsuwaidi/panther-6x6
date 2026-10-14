@@ -44,7 +44,8 @@ Create a key at https://platform.claude.com, then put it in `.env` as `ANTHROPIC
 **Option B: a service account (for servers or shared use)**
 
 1. Same project and APIs as above. Create a service account and download its JSON key.
-2. Set `GOOGLE_SERVICE_ACCOUNT_FILE=service-account.json` in `.env`.
+2. Set `GOOGLE_SERVICE_ACCOUNT_FILE=service-account.json` in `.env`, or put the key file's full
+   JSON in `GOOGLE_SERVICE_ACCOUNT_JSON` (useful where secrets are environment variables).
 3. **Share each Careem acquisition sheet** (Viewer access) with the service account's email
    address (`...@...iam.gserviceaccount.com`).
 

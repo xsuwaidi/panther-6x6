@@ -1,5 +1,6 @@
 """Read-only Google Sheets / Drive access, limited to Careem acquisition sheets."""
 
+import json
 import os
 from pathlib import Path
 
@@ -17,6 +18,9 @@ TOKEN_FILE = Path(os.environ.get("GOOGLE_TOKEN_FILE", "token.json"))
 
 
 def _credentials():
+    sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if sa_json:
+        return service_account.Credentials.from_service_account_info(json.loads(sa_json), scopes=SCOPES)
     sa_file = os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE")
     if sa_file:
         return service_account.Credentials.from_service_account_file(sa_file, scopes=SCOPES)
@@ -33,7 +37,7 @@ def _credentials():
         if not Path(client_file).exists():
             raise SystemExit(
                 f"No Google credentials found. Put your OAuth client file at {client_file!r} "
-                "or set GOOGLE_SERVICE_ACCOUNT_FILE. See README.md."
+                "or set GOOGLE_SERVICE_ACCOUNT_FILE / GOOGLE_SERVICE_ACCOUNT_JSON. See README.md."
             )
         flow = InstalledAppFlow.from_client_secrets_file(client_file, SCOPES)
         creds = flow.run_local_server(port=0)
